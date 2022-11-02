@@ -1,0 +1,34 @@
+{
+  "name": "action-maestro-cloud",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "release": "./_release.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mobile-dev-inc/action-maestro-cloud.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mobile-dev-inc/action-maestro-cloud/issues"
+  },
+  "homepage": "https://github.com/mobile-dev-inc/action-maestro-cloud#readme",
+  "devDependencies": {
+    "@types/node": "^17.0.45",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "@octokit/webhooks-definitions": "^3.67.3",
+    "@vercel/ncc": "^0.33.3",
+    "archiver": "^5.3.1",
+    "console-log-colors": "^0.2.3",
+    "node-fetch": "^3.2.10",
+    "node-stream-zip": "^1.15.0"
+  }
+}

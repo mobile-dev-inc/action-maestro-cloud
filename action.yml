@@ -1,0 +1,30 @@
+name: 'Maestro Cloud Upload Action'
+description: 'Upload app to Maestro Cloud for analysis'
+inputs:
+  api-url:
+    description: 'Alternative mobile.dev API url'
+    required: false
+  api-key:
+    description: 'mobile.dev API key'
+    required: true
+  name:
+    description: 'Name of the version of the uploaded app'
+    required: true
+  app-file:
+    description: 'The app file to upload to Maestro Cloud'
+    required: true
+  mapping-file:
+    description: 'The Proguard mapping file to upload to Maestro Cloud'
+    required: false
+  workspace:
+    description: 'Path to a folder that contains Maestro flows (.mobiledev by default)'
+    required: false
+  env:
+    description: 'Set of key=value entries to pass as an input to Maestro flows'
+    required: false
+  async:
+    description: 'Whether to run Upload in async fashion and not block until completed'
+    required: false
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

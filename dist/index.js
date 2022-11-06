@@ -45402,8 +45402,20 @@ const StatusPoller_1 = __importDefault(__nccwpck_require__(2575));
 const log_1 = __nccwpck_require__(3826);
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE'];
 const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0, function* () {
-    const resolvedWorkspaceFolder = workspaceFolder || '.mobiledev';
-    if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
+    let resolvedWorkspaceFolder = workspaceFolder;
+    if (resolvedWorkspaceFolder === null) {
+        if ((0, fs_1.existsSync)('.maestro')) {
+            resolvedWorkspaceFolder = '.maestro';
+        }
+        else if ((0, fs_1.existsSync)('.mobiledev')) {
+            resolvedWorkspaceFolder = '.mobiledev';
+        }
+        else {
+            (0, log_1.err)(`Default workspace directory does not exist: .maestro/`);
+            return null;
+        }
+    }
+    else if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
         (0, log_1.err)(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
         return null;
     }

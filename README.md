@@ -37,7 +37,7 @@ jobs:
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -50,7 +50,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/release/app-release.apk
     mapping-file: app/build/outputs/mapping/release/mapping.txt
 ```
@@ -60,12 +60,22 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <app_name>.app
     mapping-file: <app_name>.app.dSYM
 ```
 
-`app-file` should point to an x86 compatible Simulator build packaged in a `zip` archive or an iOS `.app` file
+`app-file` should point to an x86 compatible Simulator .app build.
+
+### .dSYM file
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: <app_name>.app
+    mapping-file: <app_name>.app.dSYM
+```
 
 `mapping-file` should point to generated .dSYM file (unique per build). more info [here](https://developer.apple.com/documentation/xcode/building-your-app-to-include-debugging-information). 
 
@@ -76,7 +86,7 @@ By default, the action is looking for a `.mobiledev` folder with Maestro flows i
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
     workspace: myApp/.mobiledev
 ```
@@ -92,7 +102,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
     workspace: myApp/.mobiledev
     name: customName
@@ -105,7 +115,7 @@ If you don't want the action to wait until the Upload has been completed as is t
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.0.0
   with:
-    api-key: ${{ secrets.MOBILE_DEV_API_KEY }}
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
     async: true
 ```

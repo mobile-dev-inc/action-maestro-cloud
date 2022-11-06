@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import ApiClient, { BenchmarkStatus, UploadStatusError, UploadRequest } from './ApiClient'
+import ApiClient, { UploadRequest } from './ApiClient'
 import { validateAppFile } from './app_file';
 import { zipFolder, zipIfFolder } from './archive_utils';
 import { getParameters } from './params';
@@ -10,8 +10,17 @@ import { err, info } from './log';
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE']
 
 const createWorkspaceZip = async (workspaceFolder: string | null): Promise<string | null> => {
-  const resolvedWorkspaceFolder = workspaceFolder || '.mobiledev'
-  if (!existsSync(resolvedWorkspaceFolder)) {
+  let resolvedWorkspaceFolder = workspaceFolder
+  if (resolvedWorkspaceFolder === null) {
+    if (existsSync('.maestro')) {
+      resolvedWorkspaceFolder = '.maestro'
+    } else if (existsSync('.mobiledev')) {
+      resolvedWorkspaceFolder = '.mobiledev'
+    } else {
+      err(`Default workspace directory does not exist: .maestro/`)
+      return null
+    }
+  } else if (!existsSync(resolvedWorkspaceFolder)) {
     err(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`)
     return null
   }

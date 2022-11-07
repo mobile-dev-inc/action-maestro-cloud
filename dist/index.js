@@ -45411,13 +45411,11 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
             resolvedWorkspaceFolder = '.mobiledev';
         }
         else {
-            (0, log_1.err)(`Default workspace directory does not exist: .maestro/`);
-            return null;
+            throw new Error("Default workspace directory does not exist: .maestro/");
         }
     }
     else if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
-        (0, log_1.err)(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
-        return null;
+        throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
     }
     (0, log_1.info)("Packaging .mobiledev folder");
     yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, 'workspace.zip');

@@ -1,6 +1,6 @@
-# Maestro Cloud Upload Action
+# Maestro Cloud Action
 
-Upload your app to Maestro Cloud for analysis.
+Run your Flows on [Maestro Cloud](https://cloud.mobile.dev).
 
 # Triggers
 

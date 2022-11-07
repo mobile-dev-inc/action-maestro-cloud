@@ -17,12 +17,10 @@ const createWorkspaceZip = async (workspaceFolder: string | null): Promise<strin
     } else if (existsSync('.mobiledev')) {
       resolvedWorkspaceFolder = '.mobiledev'
     } else {
-      err(`Default workspace directory does not exist: .maestro/`)
-      return null
+      throw new Error("Default workspace directory does not exist: .maestro/")
     }
   } else if (!existsSync(resolvedWorkspaceFolder)) {
-    err(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`)
-    return null
+    throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`)
   }
   info("Packaging .mobiledev folder")
   await zipFolder(resolvedWorkspaceFolder, 'workspace.zip');

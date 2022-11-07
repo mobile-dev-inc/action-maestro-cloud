@@ -11,7 +11,7 @@ const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE']
 
 const createWorkspaceZip = async (workspaceFolder: string | null): Promise<string | null> => {
   let resolvedWorkspaceFolder = workspaceFolder
-  if (resolvedWorkspaceFolder === null) {
+  if (resolvedWorkspaceFolder === null || workspaceFolder?.length === 0) {
     if (existsSync('.maestro')) {
       resolvedWorkspaceFolder = '.maestro'
     } else if (existsSync('.mobiledev')) {

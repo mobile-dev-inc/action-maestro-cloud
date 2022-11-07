@@ -25,7 +25,7 @@ on:
     branches: [ master ]
 jobs:
   upload-to-mobile-dev:
-    name: Upload build Maestro Cloud
+    name: Run Flows on Maestro Cloud
     steps:
       - uses: actions/checkout@v3
         with:
@@ -81,14 +81,14 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 
 # Custom workspace location
 
-By default, the action is looking for a `.mobiledev` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
+By default, the action is looking for a `.maestro` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.1.0
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
-    workspace: myApp/.mobiledev
+    workspace: myFlows/
 ```
 
 # Custom name
@@ -104,8 +104,7 @@ If you want to override this behaviour and specify your own name, you can do so 
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
-    workspace: myApp/.mobiledev
-    name: customName
+    name: My Upload
 ```
 
 

@@ -45403,7 +45403,7 @@ const log_1 = __nccwpck_require__(3826);
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE'];
 const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0, function* () {
     let resolvedWorkspaceFolder = workspaceFolder;
-    if (resolvedWorkspaceFolder === null) {
+    if (resolvedWorkspaceFolder === null || (workspaceFolder === null || workspaceFolder === void 0 ? void 0 : workspaceFolder.length) === 0) {
         if ((0, fs_1.existsSync)('.maestro')) {
             resolvedWorkspaceFolder = '.maestro';
         }

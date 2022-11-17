@@ -83,13 +83,13 @@ export async function getParameters(): Promise<Params> {
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
     .map(it => {
-      const pair = it.split("=")
+      const parts = it.split('=')
 
-      if (pair.length != 2) {
+      if (parts.length < 2) {
         throw new Error(`Invalid env parameter: ${it}`)
       }
 
-      return { key: pair[0], value: pair[1] }
+      return { key: parts[0], value: parts.slice(1).join('=') }
     })
     .reduce((map, entry) => {
       map[entry.key] = entry.value

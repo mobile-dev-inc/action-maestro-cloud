@@ -5,7 +5,7 @@ import { zipFolder, zipIfFolder } from './archive_utils';
 import { getParameters } from './params';
 import { existsSync } from 'fs';
 import StatusPoller from './StatusPoller';
-import { err, info } from './log';
+import { info } from './log';
 
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE']
 
@@ -14,15 +14,16 @@ const createWorkspaceZip = async (workspaceFolder: string | null): Promise<strin
   if (resolvedWorkspaceFolder === null || workspaceFolder?.length === 0) {
     if (existsSync('.maestro')) {
       resolvedWorkspaceFolder = '.maestro'
+      info("Packaging .maestro folder")
     } else if (existsSync('.mobiledev')) {
       resolvedWorkspaceFolder = '.mobiledev'
+      info("Packaging .mobiledev folder")
     } else {
       throw new Error("Default workspace directory does not exist: .maestro/")
     }
   } else if (!existsSync(resolvedWorkspaceFolder)) {
     throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`)
   }
-  info("Packaging .mobiledev folder")
   await zipFolder(resolvedWorkspaceFolder, 'workspace.zip');
   return 'workspace.zip'
 }

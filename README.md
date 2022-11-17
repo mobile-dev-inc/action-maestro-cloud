@@ -118,3 +118,15 @@ If you don't want the action to wait until the Upload has been completed as is t
     app-file: app.zip
     async: true
 ```
+# Adding environment variables
+If you want to pass environment variables along with your upload, add a multiline `env` argument:
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.1.1
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
+    env: |
+      USERNAME=<username>
+      PASSWORD=<password>
+```

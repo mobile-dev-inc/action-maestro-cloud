@@ -15,7 +15,8 @@ export type Params = {
   repoOwner: string
   pullRequestId?: string,
   env?: { [key: string]: string },
-  async?: boolean
+  async?: boolean,
+  androidApiLevel?: number,
 }
 
 function getBranchName(): string {
@@ -70,6 +71,10 @@ function getInferredName(): string {
   return github.context.sha
 }
 
+function getAndroidApiLevel(apiLevel?: string): number | undefined {
+  return apiLevel ? +apiLevel : undefined
+}
+
 export async function getParameters(): Promise<Params> {
   const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev'
   const name = core.getInput('name', { required: false }) || getInferredName()
@@ -79,6 +84,7 @@ export async function getParameters(): Promise<Params> {
   const workspaceFolder = core.getInput('workspace', { required: false })
   const mappingFile = mappingFileInput && validateMappingFile(mappingFileInput)
   const async = core.getInput('async', { required: false }) === 'true'
+  const androidApiLevelString = core.getInput('android-api-level', { required: false })
 
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
@@ -100,5 +106,6 @@ export async function getParameters(): Promise<Params> {
   const repoOwner = getRepoOwner();
   const repoName = getRepoName();
   const pullRequestId = getPullRequestId()
-  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async }
+  const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
+  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel }
 }

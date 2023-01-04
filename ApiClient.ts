@@ -16,7 +16,8 @@ export type UploadRequest = {
   pullRequestId?: string
   branch?: string,
   env?: { [key: string]: string },
-  agent: string
+  agent: string,
+  androidApiLevel?: number,
 }
 
 // irrelevant data has been factored out from this model

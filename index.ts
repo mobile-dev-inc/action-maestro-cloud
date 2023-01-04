@@ -45,7 +45,8 @@ const run = async () => {
     repoName,
     pullRequestId,
     env,
-    async
+    async,
+    androidApiLevel,
   } = await getParameters()
 
   const appFile = await validateAppFile(
@@ -67,7 +68,8 @@ const run = async () => {
     repoName: repoName,
     pullRequestId: pullRequestId,
     env: env,
-    agent: 'gh-action'
+    agent: 'gh-action',
+    androidApiLevel: androidApiLevel,
   }
 
   const { uploadId, teamId, targetId: appId } = await client.uploadRequest(

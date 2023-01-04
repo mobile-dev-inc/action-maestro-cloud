@@ -25,6 +25,9 @@ inputs:
   async:
     description: 'Whether to run Upload in async fashion and not block until completed'
     required: false
+  android-api-level:
+    description: 'Android API level to run your flow against'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

@@ -29,13 +29,13 @@ function getBranchName(): string {
     return branchName
   }
 
-  const regex = /refs\/heads\/(.*)/
+  const regex = /refs\/(heads|tags)\/(.*)/
   const ref = github.context.ref
   let result = regex.exec(ref);
-  if (!result) {
+  if (!result || result.length < 3) {
     throw new Error(`Failed to parse GitHub ref: ${ref}`)
   }
-  return result[1]
+  return result[2]
 }
 
 function getRepoName(): string {

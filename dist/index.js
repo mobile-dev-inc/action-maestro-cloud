@@ -45406,9 +45406,11 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
     if (resolvedWorkspaceFolder === null || (workspaceFolder === null || workspaceFolder === void 0 ? void 0 : workspaceFolder.length) === 0) {
         if ((0, fs_1.existsSync)('.maestro')) {
             resolvedWorkspaceFolder = '.maestro';
+            (0, log_1.info)("Packaging .maestro folder");
         }
         else if ((0, fs_1.existsSync)('.mobiledev')) {
             resolvedWorkspaceFolder = '.mobiledev';
+            (0, log_1.info)("Packaging .mobiledev folder");
         }
         else {
             throw new Error("Default workspace directory does not exist: .maestro/");
@@ -45417,7 +45419,6 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
     else if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
         throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
     }
-    (0, log_1.info)("Packaging .mobiledev folder");
     yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, 'workspace.zip');
     return 'workspace.zip';
 });
@@ -45426,7 +45427,7 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, } = yield (0, params_1.getParameters)();
     const appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
     if (!knownAppTypes.includes(appFile.type)) {
         throw new Error(`Unsupported app file type: ${appFile.type}`);
@@ -45441,7 +45442,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         repoName: repoName,
         pullRequestId: pullRequestId,
         env: env,
-        agent: 'gh-action'
+        agent: 'gh-action',
+        androidApiLevel: androidApiLevel,
     };
     const { uploadId, teamId, targetId: appId } = yield client.uploadRequest(request, appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
     const consoleUrl = (0, exports.getConsoleUrl)(uploadId, teamId, appId);
@@ -45540,13 +45542,13 @@ function getBranchName() {
         }
         return branchName;
     }
-    const regex = /refs\/heads\/(.*)/;
+    const regex = /refs\/(heads|tags)\/(.*)/;
     const ref = github.context.ref;
     let result = regex.exec(ref);
-    if (!result) {
+    if (!result || result.length < 3) {
         throw new Error(`Failed to parse GitHub ref: ${ref}`);
     }
-    return result[1];
+    return result[2];
 }
 function getRepoName() {
     return github.context.repo.repo;
@@ -45581,6 +45583,9 @@ function getInferredName() {
     }
     return github.context.sha;
 }
+function getAndroidApiLevel(apiLevel) {
+    return apiLevel ? +apiLevel : undefined;
+}
 function getParameters() {
     return __awaiter(this, void 0, void 0, function* () {
         const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev';
@@ -45591,6 +45596,7 @@ function getParameters() {
         const workspaceFolder = core.getInput('workspace', { required: false });
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
         const async = core.getInput('async', { required: false }) === 'true';
+        const androidApiLevelString = core.getInput('android-api-level', { required: false });
         var env = {};
         env = core.getMultilineInput('env', { required: false })
             .map(it => {
@@ -45608,7 +45614,8 @@ function getParameters() {
         const repoOwner = getRepoOwner();
         const repoName = getRepoName();
         const pullRequestId = getPullRequestId();
-        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async };
+        const androidApiLevel = getAndroidApiLevel(androidApiLevelString);
+        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel };
     });
 }
 exports.getParameters = getParameters;

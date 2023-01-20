@@ -34,7 +34,7 @@ jobs:
 # Android
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/debug/app-debug.apk
@@ -47,7 +47,7 @@ jobs:
 Include the Proguard mapping file to deobfuscate Android performance traces:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/release/app-release.apk
@@ -57,7 +57,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 # iOS
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <app_name>.app
@@ -69,7 +69,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 ### .dSYM file
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <app_name>.app
@@ -83,7 +83,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 By default, the action is looking for a `.maestro` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -101,7 +101,7 @@ A name will automatically be provided according to the following order:
 If you want to override this behaviour and specify your own name, you can do so by setting the `name` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -113,7 +113,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 If you don't want the action to wait until the Upload has been completed as is the default behaviour, set the `async` argument to `true`:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -125,7 +125,7 @@ If you don't want the action to wait until the Upload has been completed as is t
 If you want to pass environment variables along with your upload, add a multiline `env` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.2.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.2.2
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip

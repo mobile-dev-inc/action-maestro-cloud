@@ -45401,6 +45401,13 @@ const fs_1 = __nccwpck_require__(7147);
 const StatusPoller_1 = __importDefault(__nccwpck_require__(2575));
 const log_1 = __nccwpck_require__(3826);
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE'];
+const listFilesInDirectory = () => {
+    const files = (0, fs_1.readdirSync)('.', { withFileTypes: true });
+    console.log("Directory contents:");
+    for (const f of files) {
+        console.log(f.isDirectory() ? `${f.name}/` : f.name);
+    }
+};
 const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0, function* () {
     let resolvedWorkspaceFolder = workspaceFolder;
     if (resolvedWorkspaceFolder === null || (workspaceFolder === null || workspaceFolder === void 0 ? void 0 : workspaceFolder.length) === 0) {
@@ -45413,6 +45420,7 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
             (0, log_1.info)("Packaging .mobiledev folder");
         }
         else {
+            listFilesInDirectory();
             throw new Error("Default workspace directory does not exist: .maestro/");
         }
     }
@@ -45442,7 +45450,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         repoName: repoName,
         pullRequestId: pullRequestId,
         env: env,
-        agent: 'gh-action',
+        agent: 'github',
         androidApiLevel: androidApiLevel,
     };
     const { uploadId, teamId, targetId: appId } = yield client.uploadRequest(request, appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));

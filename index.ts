@@ -3,11 +3,20 @@ import ApiClient, { UploadRequest } from './ApiClient'
 import { validateAppFile } from './app_file';
 import { zipFolder, zipIfFolder } from './archive_utils';
 import { getParameters } from './params';
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import StatusPoller from './StatusPoller';
 import { info } from './log';
 
 const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE']
+
+const listFilesInDirectory = () => {
+  const files = readdirSync('.', { withFileTypes: true })
+
+  console.log("Directory contents:")
+  for (const f of files) {
+    console.log(f.isDirectory() ? `${f.name}/` : f.name)
+  }
+}
 
 const createWorkspaceZip = async (workspaceFolder: string | null): Promise<string | null> => {
   let resolvedWorkspaceFolder = workspaceFolder
@@ -19,6 +28,7 @@ const createWorkspaceZip = async (workspaceFolder: string | null): Promise<strin
       resolvedWorkspaceFolder = '.mobiledev'
       info("Packaging .mobiledev folder")
     } else {
+      listFilesInDirectory()
       throw new Error("Default workspace directory does not exist: .maestro/")
     }
   } else if (!existsSync(resolvedWorkspaceFolder)) {
@@ -68,7 +78,7 @@ const run = async () => {
     repoName: repoName,
     pullRequestId: pullRequestId,
     env: env,
-    agent: 'gh-action',
+    agent: 'github',
     androidApiLevel: androidApiLevel,
   }
 

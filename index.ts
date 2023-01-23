@@ -51,6 +51,7 @@ const run = async () => {
     mappingFile,
     workspaceFolder,
     branchName,
+    commitSha,
     repoOwner,
     repoName,
     pullRequestId,
@@ -74,6 +75,7 @@ const run = async () => {
   const request: UploadRequest = {
     benchmarkName: name,
     branch: branchName,
+    commitSha: commitSha,
     repoOwner: repoOwner,
     repoName: repoName,
     pullRequestId: pullRequestId,

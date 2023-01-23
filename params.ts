@@ -11,6 +11,7 @@ export type Params = {
   mappingFile: string | null,
   workspaceFolder: string | null,
   branchName: string
+  commitSha?: string
   repoName: string
   repoOwner: string
   pullRequestId?: string,
@@ -36,6 +37,10 @@ function getBranchName(): string {
     throw new Error(`Failed to parse GitHub ref: ${ref}`)
   }
   return result[2]
+}
+
+function getCommitSha(): string | undefined {
+  return github.context.payload.pull_request?.head.sha
 }
 
 function getRepoName(): string {
@@ -103,9 +108,10 @@ export async function getParameters(): Promise<Params> {
     }, env)
 
   const branchName = getBranchName()
-  const repoOwner = getRepoOwner();
-  const repoName = getRepoName();
+  const commitSha = getCommitSha()
+  const repoOwner = getRepoOwner()
+  const repoName = getRepoName()
   const pullRequestId = getPullRequestId()
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
-  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel }
+  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel }
 }

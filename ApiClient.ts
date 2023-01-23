@@ -15,6 +15,7 @@ export type UploadRequest = {
   repoName?: string
   pullRequestId?: string
   branch?: string,
+  commitSha?: string,
   env?: { [key: string]: string },
   agent: string,
   androidApiLevel?: number,

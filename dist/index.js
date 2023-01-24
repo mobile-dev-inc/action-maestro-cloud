@@ -45435,7 +45435,7 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, } = yield (0, params_1.getParameters)();
     const appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
     if (!knownAppTypes.includes(appFile.type)) {
         throw new Error(`Unsupported app file type: ${appFile.type}`);
@@ -45446,6 +45446,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const request = {
         benchmarkName: name,
         branch: branchName,
+        commitSha: commitSha,
         repoOwner: repoOwner,
         repoName: repoName,
         pullRequestId: pullRequestId,
@@ -45558,6 +45559,10 @@ function getBranchName() {
     }
     return result[2];
 }
+function getCommitSha() {
+    var _a;
+    return (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha;
+}
 function getRepoName() {
     return github.context.repo.repo;
 }
@@ -45619,11 +45624,12 @@ function getParameters() {
             return map;
         }, env);
         const branchName = getBranchName();
+        const commitSha = getCommitSha();
         const repoOwner = getRepoOwner();
         const repoName = getRepoName();
         const pullRequestId = getPullRequestId();
         const androidApiLevel = getAndroidApiLevel(androidApiLevelString);
-        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, repoOwner, repoName, pullRequestId, env, async, androidApiLevel };
+        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel };
     });
 }
 exports.getParameters = getParameters;

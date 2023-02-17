@@ -58,6 +58,8 @@ const run = async () => {
     env,
     async,
     androidApiLevel,
+    includeTags,
+    excludeTags
   } = await getParameters()
 
   const appFile = await validateAppFile(
@@ -82,6 +84,8 @@ const run = async () => {
     env: env,
     agent: 'github',
     androidApiLevel: androidApiLevel,
+    includeTags: includeTags,
+    excludeTags: excludeTags,
   }
 
   const { uploadId, teamId, targetId: appId } = await client.uploadRequest(

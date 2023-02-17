@@ -19,6 +19,8 @@ export type UploadRequest = {
   env?: { [key: string]: string },
   agent: string,
   androidApiLevel?: number,
+  includeTags: string[],
+  excludeTags: string[],
 }
 
 // irrelevant data has been factored out from this model

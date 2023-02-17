@@ -18,6 +18,8 @@ export type Params = {
   env?: { [key: string]: string },
   async?: boolean,
   androidApiLevel?: number,
+  includeTags: string[],
+  excludeTags: string[],
 }
 
 function getBranchName(): string {
@@ -80,6 +82,23 @@ function getAndroidApiLevel(apiLevel?: string): number | undefined {
   return apiLevel ? +apiLevel : undefined
 }
 
+function parseTags(tags?: string): string[] {
+  if (tags === undefined) return []
+
+  if (tags.charAt(0) === '[') {
+    const arrayTags = tags.substring(1, tags.length - 1)
+      .split(',')
+      .map(it => it.trim())
+
+    if (!Array.isArray(arrayTags))
+      throw new Error("tags must be an Array.")
+
+    return arrayTags
+  }
+
+  return [tags]
+}
+
 export async function getParameters(): Promise<Params> {
   const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev'
   const name = core.getInput('name', { required: false }) || getInferredName()
@@ -90,6 +109,8 @@ export async function getParameters(): Promise<Params> {
   const mappingFile = mappingFileInput && validateMappingFile(mappingFileInput)
   const async = core.getInput('async', { required: false }) === 'true'
   const androidApiLevelString = core.getInput('android-api-level', { required: false })
+  const includeTags = parseTags(core.getInput('include-tags', { required: false }))
+  const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }))
 
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
@@ -113,5 +134,5 @@ export async function getParameters(): Promise<Params> {
   const repoName = getRepoName()
   const pullRequestId = getPullRequestId()
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
-  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel }
+  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, includeTags, excludeTags }
 }

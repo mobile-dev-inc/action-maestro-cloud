@@ -28,6 +28,12 @@ inputs:
   android-api-level:
     description: 'Android API level to run your flow against'
     required: false
+  include-tags:
+    description: 'List of tags that will remove flows that does not have the provided tags'
+    required: false
+  exclude-tags:
+    description: 'List of tags that will remove flows containing the provided tags'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

@@ -45435,7 +45435,7 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, includeTags, excludeTags } = yield (0, params_1.getParameters)();
     const appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
     if (!knownAppTypes.includes(appFile.type)) {
         throw new Error(`Unsupported app file type: ${appFile.type}`);
@@ -45453,6 +45453,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         env: env,
         agent: 'github',
         androidApiLevel: androidApiLevel,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
     };
     const { uploadId, teamId, targetId: appId } = yield client.uploadRequest(request, appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
     const consoleUrl = (0, exports.getConsoleUrl)(uploadId, teamId, appId);
@@ -45599,6 +45601,18 @@ function getInferredName() {
 function getAndroidApiLevel(apiLevel) {
     return apiLevel ? +apiLevel : undefined;
 }
+function parseTags(tags) {
+    if (tags === undefined || tags === '')
+        return [];
+    if (tags.includes(',')) {
+        const arrayTags = tags.split(',')
+            .map(it => it.trim());
+        if (!Array.isArray(arrayTags))
+            throw new Error("tags must be an Array.");
+        return arrayTags;
+    }
+    return [tags];
+}
 function getParameters() {
     return __awaiter(this, void 0, void 0, function* () {
         const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev';
@@ -45610,6 +45624,8 @@ function getParameters() {
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
         const async = core.getInput('async', { required: false }) === 'true';
         const androidApiLevelString = core.getInput('android-api-level', { required: false });
+        const includeTags = parseTags(core.getInput('include-tags', { required: false }));
+        const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
         var env = {};
         env = core.getMultilineInput('env', { required: false })
             .map(it => {
@@ -45629,7 +45645,7 @@ function getParameters() {
         const repoName = getRepoName();
         const pullRequestId = getPullRequestId();
         const androidApiLevel = getAndroidApiLevel(androidApiLevelString);
-        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel };
+        return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, includeTags, excludeTags };
     });
 }
 exports.getParameters = getParameters;

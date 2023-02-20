@@ -10,6 +10,7 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 ncc build index.ts
+sed -i.bkp "s/action-maestro-cloud@v.*/action-maestro-cloud@v${VERSION}/g" README.md
 git add -A
 git commit --allow-empty -m "Version ${VERSION}"
 git tag -a "v${VERSION}" -m "Version ${VERSION}"

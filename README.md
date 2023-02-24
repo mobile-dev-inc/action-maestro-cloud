@@ -40,7 +40,7 @@ jobs:
     app-file: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`app-file` should point to an x86 compatible APK file
+`app-file` should point to an x86 compatible APK file, either directly to the file or a glob pattern matching the file name. When using a pattern, the first matched file will be used.
 
 ### Proguard Deobfuscation
 
@@ -64,7 +64,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
     mapping-file: <app_name>.app.dSYM
 ```
 
-`app-file` should point to an x86 compatible Simulator .app build.
+`app-file` should point to an x86 compatible Simulator .app build, either directly to the file or a glob pattern matching the file name. When using a pattern, the first matched file will be used.
 
 ### .dSYM file
 

@@ -1,5 +1,6 @@
 import { existsSync, lstatSync } from "fs";
 import { lstat } from "fs/promises";
+import { glob } from "glob";
 import path from "path";
 
 const archiver = require("archiver");
@@ -37,16 +38,18 @@ export async function zipIfFolder(
     inputPath: string,
 ): Promise<string> {
     return new Promise(async (resolve, reject) => {
-        const stat = await lstat(inputPath);
+        const paths = glob.sync(inputPath);
+        if (paths.length === 0) throw new Error(`Could not find file matching pattern: ${inputPath}`);
+        const stat = await lstat(paths[0]);
 
         if (stat.isDirectory()) {
-            const basename = path.basename(inputPath);
+            const basename = path.basename(paths[0]);
             const archiveName = basename + '.zip';
 
-            await zipFolder(inputPath, archiveName, basename);
+            await zipFolder(paths[0], archiveName, basename);
             resolve(archiveName);
         } else {
-            resolve(inputPath);
+            resolve(paths[0]);
         }
     });
 }

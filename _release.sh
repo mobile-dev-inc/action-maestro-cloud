@@ -3,7 +3,7 @@
 set -e
 
 VERSION=$1
-MAJOR_VERSION=$(echo "$version" | cut -d '.' -f 1)
+MAJOR_VERSION=$(echo "$VERSION" | cut -d '.' -f 1)
 
 if [[ -z "$VERSION" ]]; then
   echo "Usage: npm run release <version>"

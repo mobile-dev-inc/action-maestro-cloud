@@ -2,6 +2,17 @@
 
 Run your Flows on [Maestro Cloud](https://cloud.mobile.dev).
 
+# Using the action
+
+Add the following to your workflow. Note that you can use the `v1` tag if you want to keep using the latest version of the action, which will automatically resolve to all `v1.minor.patch` versions as they get published.
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: <path_to_your_app_file>
+```
+
 # Triggers
 
 Trigger this action on (1) pushes to your main branch and (2) pull requests opened against your main branch:

@@ -1,5 +1,5 @@
 name: 'Maestro Cloud Upload Action'
-description: 'Upload app to Maestro Cloud for analysis'
+description: 'Upload your app to Maestro Cloud to run your Flows in CI'
 inputs:
   api-url:
     description: 'Alternative mobile.dev API url'

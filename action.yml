@@ -9,7 +9,7 @@ inputs:
     required: true
   name:
     description: 'Name of the version of the uploaded app'
-    required: true
+    required: false
   app-file:
     description: 'The app file to upload to Maestro Cloud'
     required: true

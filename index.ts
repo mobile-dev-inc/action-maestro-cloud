@@ -58,6 +58,7 @@ const run = async () => {
     env,
     async,
     androidApiLevel,
+    iOSVersion,
     includeTags,
     excludeTags
   } = await getParameters()
@@ -84,6 +85,7 @@ const run = async () => {
     env: env,
     agent: 'github',
     androidApiLevel: androidApiLevel,
+    iOSVersion,
     includeTags: includeTags,
     excludeTags: excludeTags,
   }

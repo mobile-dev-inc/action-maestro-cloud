@@ -18,6 +18,7 @@ export type Params = {
   env?: { [key: string]: string },
   async?: boolean,
   androidApiLevel?: number,
+  iOSVersion?: string,
   includeTags: string[],
   excludeTags: string[],
 }
@@ -108,6 +109,7 @@ export async function getParameters(): Promise<Params> {
   const mappingFile = mappingFileInput && validateMappingFile(mappingFileInput)
   const async = core.getInput('async', { required: false }) === 'true'
   const androidApiLevelString = core.getInput('android-api-level', { required: false })
+  const iOSVersion = core.getInput('ios-version', { required: false })
   const includeTags = parseTags(core.getInput('include-tags', { required: false }))
   const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }))
 
@@ -133,5 +135,24 @@ export async function getParameters(): Promise<Params> {
   const repoName = getRepoName()
   const pullRequestId = getPullRequestId()
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
-  return { apiUrl, name, apiKey, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, includeTags, excludeTags }
+  
+  return { 
+    apiUrl, 
+    name, 
+    apiKey, 
+    appFilePath, 
+    mappingFile, 
+    workspaceFolder, 
+    branchName, 
+    commitSha,
+    repoOwner, 
+    repoName, 
+    pullRequestId, 
+    env, 
+    async, 
+    androidApiLevel, 
+    iOSVersion, 
+    includeTags, 
+    excludeTags 
+  }
 }

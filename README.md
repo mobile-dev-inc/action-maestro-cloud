@@ -159,3 +159,17 @@ You can either pass a single value, or comma-separated (`,`) values.
     include-tags: dev, pull-request
     exclude-tags: excludeTag
 ```
+
+# Specifying Android API Level
+
+You can specify what Android API level to use when running in Maestro Cloud using the `android-api-level` parameter.
+
+The default API level is 30.
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.3.3
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.apk
+    android-api-level: 29
+```

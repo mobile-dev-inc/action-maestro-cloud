@@ -1,42 +1,45 @@
-name: 'Maestro Cloud Upload Action'
-description: 'Upload your app to Maestro Cloud to run your Flows in CI'
+name: "Maestro Cloud Upload Action"
+description: "Upload your app to Maestro Cloud to run your Flows in CI"
 inputs:
   api-url:
-    description: 'Alternative mobile.dev API url'
+    description: "Alternative mobile.dev API url"
     required: false
   api-key:
-    description: 'mobile.dev API key'
+    description: "mobile.dev API key"
     required: true
   name:
-    description: 'Name of the version of the uploaded app'
+    description: "Name of the version of the uploaded app"
     required: false
   app-file:
-    description: 'The app file to upload to Maestro Cloud'
+    description: "The app file to upload to Maestro Cloud"
     required: true
   mapping-file:
-    description: 'The Proguard mapping file to upload to Maestro Cloud'
+    description: "The Proguard mapping file to upload to Maestro Cloud"
     required: false
   workspace:
-    description: 'Path to a folder that contains Maestro flows (.mobiledev by default)'
+    description: "Path to a folder that contains Maestro flows (.mobiledev by default)"
     required: false
   env:
-    description: 'Set of key=value entries to pass as an input to Maestro flows'
+    description: "Set of key=value entries to pass as an input to Maestro flows"
     required: false
   async:
-    description: 'Whether to run Upload in async fashion and not block until completed'
+    description: "Whether to run Upload in async fashion and not block until completed"
     required: false
   android-api-level:
-    description: 'Android API level to run your flow against'
+    description: "Android API level to run your flow against"
+    required: false
+  ios-version:
+    description: "iOS version to run your flow against"
     required: false
   include-tags:
-    description: 'List of tags that will remove flows that does not have the provided tags'
+    description: "List of tags that will remove flows that does not have the provided tags"
     required: false
   exclude-tags:
-    description: 'List of tags that will remove flows containing the provided tags'
+    description: "List of tags that will remove flows containing the provided tags"
     required: false
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
 branding:
-  icon: 'upload-cloud'
-  color: 'blue'
+  icon: "upload-cloud"
+  color: "blue"

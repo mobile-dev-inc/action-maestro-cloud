@@ -173,3 +173,17 @@ The default API level is 30.
     app-file: app.apk
     android-api-level: 29
 ```
+
+# Specifying iOS version
+
+You can specify what **major** iOS Version to use when running in Maestro Cloud using the `ios-version` parameter.
+
+The default iOS version is 15.
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.3.3
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
+    ios-version: 16
+```

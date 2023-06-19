@@ -85,7 +85,7 @@ const run = async () => {
     env: env,
     agent: 'github',
     androidApiLevel: androidApiLevel,
-    iOSVersion,
+    iOSVersion: iOSVersion,
     includeTags: includeTags,
     excludeTags: excludeTags,
   }

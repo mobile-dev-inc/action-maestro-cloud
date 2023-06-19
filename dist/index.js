@@ -47036,7 +47036,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         env: env,
         agent: 'github',
         androidApiLevel: androidApiLevel,
-        iOSVersion,
+        iOSVersion: iOSVersion,
         includeTags: includeTags,
         excludeTags: excludeTags,
     };
@@ -47185,6 +47185,9 @@ function getInferredName() {
 function getAndroidApiLevel(apiLevel) {
     return apiLevel ? +apiLevel : undefined;
 }
+function getIOSVersion(iosVersion) {
+    return iosVersion ? +iosVersion : undefined;
+}
 function parseTags(tags) {
     if (tags === undefined || tags === '')
         return [];
@@ -47208,7 +47211,7 @@ function getParameters() {
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
         const async = core.getInput('async', { required: false }) === 'true';
         const androidApiLevelString = core.getInput('android-api-level', { required: false });
-        const iOSVersion = core.getInput('ios-version', { required: false });
+        const iOSVersionString = core.getInput('ios-version', { required: false });
         const includeTags = parseTags(core.getInput('include-tags', { required: false }));
         const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
         var env = {};
@@ -47230,6 +47233,7 @@ function getParameters() {
         const repoName = getRepoName();
         const pullRequestId = getPullRequestId();
         const androidApiLevel = getAndroidApiLevel(androidApiLevelString);
+        const iOSVersion = getIOSVersion(iOSVersionString);
         return {
             apiUrl,
             name,

@@ -19,7 +19,7 @@ export type UploadRequest = {
   env?: { [key: string]: string },
   agent: string,
   androidApiLevel?: number,
-  iOSVersion?: string,
+  iOSVersion?: number,
   includeTags: string[],
   excludeTags: string[],
 }

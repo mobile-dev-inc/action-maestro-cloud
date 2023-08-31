@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import ApiClient, { BenchmarkStatus, Flow, UploadStatusError } from "./ApiClient";
+import ApiClient, { BenchmarkStatus, CancellationReason, Flow, UploadStatusError } from "./ApiClient";
 import { canceled, err, info, success, warning } from './log';
 
 const WAIT_TIMEOUT_MS = 1000 * 60 * 30 // 30 minutes
@@ -8,15 +8,36 @@ const TERMINAL_STATUSES = new Set([BenchmarkStatus.SUCCESS, BenchmarkStatus.ERRO
 
 const isCompleted = (flow: Flow): boolean => TERMINAL_STATUSES.has(flow.status)
 
+const getCanceledStatusMessage = (reason?: CancellationReason): string => {
+  switch (reason) {
+    case CancellationReason.BENCHMARK_DEPENDENCY_FAILED:
+    case CancellationReason.OVERLAPPING_BENCHMARK:
+      return 'Skipped';
+
+    case CancellationReason.TIMEOUT:
+      return 'Timeout';
+    
+    case CancellationReason.INFRA_ERROR:
+    default:
+        return 'Canceled';
+  }
+}
+
+const renderError = (errors?: string[]): string => {
+  if (!errors || errors.length === 0) return '';
+
+  return ` (${errors[0]})`;
+}
+
 const printFlowResult = (flow: Flow): void => {
   if (flow.status === BenchmarkStatus.SUCCESS) {
     success(`[Passed] ${flow.name}`)
   } else if (flow.status === BenchmarkStatus.ERROR) {
-    err(`[Failed] ${flow.name}`)
+    err(`[Failed] ${flow.name}${renderError(flow.errors)}`)
   } else if (flow.status === BenchmarkStatus.WARNING) {
     warning(`[Warning] ${flow.name}`)
   } else if (flow.status === BenchmarkStatus.CANCELED) {
-    canceled(`[Canceled] ${flow.name}`)
+    canceled(`[${getCanceledStatusMessage(flow.cancellationReason)}] ${flow.name}`)
   }
 }
 

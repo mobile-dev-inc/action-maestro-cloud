@@ -35,9 +35,18 @@ export class UploadStatusError {
   constructor(public status: number, public text: string) { }
 }
 
+export enum CancellationReason {
+  BENCHMARK_DEPENDENCY_FAILED = 'BENCHMARK_DEPENDENCY_FAILED',
+  INFRA_ERROR = 'INFRA_ERROR',
+  OVERLAPPING_BENCHMARK = 'OVERLAPPING_BENCHMARK',
+  TIMEOUT = 'TIMEOUT',
+}
+
 export type Flow = {
   name: string,
-  status: BenchmarkStatus
+  status: BenchmarkStatus,
+  errors?: string[],
+  cancellationReason?: CancellationReason
 }
 
 export type UploadStatusResponse = {
@@ -99,7 +108,7 @@ export default class ApiClient {
   async getUploadStatus(
     uploadId: string,
   ): Promise<UploadStatusResponse> {
-    const res = await fetch(`${this.apiUrl}/v2/upload/${uploadId}/status`, {
+    const res = await fetch(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,

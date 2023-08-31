@@ -110,6 +110,9 @@ export default class StatusPoller {
         info(`==== View details in the console ====\n`)
         info(`${this.consoleUrl}`)
 
+        core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status)
+        core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows)
+
         if (status === BenchmarkStatus.ERROR) {
           const resultStr = getFailedFlowsCountStr(flows)
           console.log('')

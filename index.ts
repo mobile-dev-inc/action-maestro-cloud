@@ -98,7 +98,7 @@ const run = async () => {
   )
   const consoleUrl = getConsoleUrl(uploadId, teamId, appId)
   info(`Visit the web console for more details about the upload: ${consoleUrl}\n`)
-  core.setOutput('console-url', consoleUrl)
+  core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
 
   !async && new StatusPoller(client, uploadId, consoleUrl).startPolling()
 }

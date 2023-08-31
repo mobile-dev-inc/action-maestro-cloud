@@ -187,3 +187,11 @@ The default iOS version is 15.
     app-file: app.zip
     ios-version: 16
 ```
+
+# Accessing output
+
+The following output variables are set by the action and you can access them as part of `GITHUB_OUTPUT`.
+
+- `MAESTRO_CLOUD_CONSOLE_URL` - link to the Maestro Cloud console
+- `MAESTRO_CLOUD_UPLOAD_STATUS` - status of the Upload (available only in `async` mode)
+- `MAESTRO_CLOUD_FLOW_RESULTS` - list of Flows and their results (available only in `async` mode)

@@ -190,8 +190,25 @@ The default iOS version is 15.
 
 # Accessing output
 
-The following output variables are set by the action and you can access them as part of `GITHUB_OUTPUT`.
+The following output variables are set by the action:
 
 - `MAESTRO_CLOUD_CONSOLE_URL` - link to the Maestro Cloud console
 - `MAESTRO_CLOUD_UPLOAD_STATUS` - status of the Upload (not available in `async` mode)
 - `MAESTRO_CLOUD_FLOW_RESULTS` - list of Flows and their results (not available in `async` mode)
+
+In order to access these variables you can use the following approach:
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.4.1
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: <your_app_file>
+    # ... any other parameters
+
+- name: Access Outputs
+  if: always()
+  run: |
+    echo "Console URL: ${{ steps.upload.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
+    echo "Flow Results: ${{ steps.upload.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
+    echo "Upload Status: ${{ steps.upload.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
+```

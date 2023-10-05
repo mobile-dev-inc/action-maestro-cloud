@@ -22,13 +22,15 @@ export type UploadRequest = {
   iOSVersion?: number,
   includeTags: string[],
   excludeTags: string[],
+  appBinaryId?: string
 }
 
 // irrelevant data has been factored out from this model
 export type UploadResponse = {
   uploadId: string,
   teamId: string,
-  targetId: string
+  targetId: string,
+  appBinaryId: string
 }
 
 export class UploadStatusError {
@@ -65,17 +67,19 @@ export default class ApiClient {
 
   async uploadRequest(
     request: UploadRequest,
-    appFile: string,
+    appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null,
   ): Promise<UploadResponse> {
     const formData = new FormData()
 
     formData.set('request', JSON.stringify(request))
-    formData.set(
-      'app_binary',
-      fileFromSync(appFile)
-    )
+    if (appFile) {
+      formData.set(
+        'app_binary',
+        fileFromSync(appFile)
+      )
+    }
 
     if (workspaceZip) {
       formData.set(

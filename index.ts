@@ -92,7 +92,7 @@ const run = async () => {
     iOSVersion: iOSVersion,
     includeTags: includeTags,
     excludeTags: excludeTags,
-    appBinaryId: appBinaryId
+    appBinaryId: appBinaryId || undefined,
   }
 
   const { uploadId, teamId, targetId: appId, appBinaryId: uploadedBinaryId } = await client.uploadRequest(

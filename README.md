@@ -188,6 +188,23 @@ The default iOS version is 15.
     ios-version: 16
 ```
 
+# Using an already uploaded App
+
+You can use an already uploaded App binary in Maestro Cloud using the `app-binary-id` parameter.
+
+```yaml
+      - id: upload
+        uses: igorsmotto/action-maestro-cloud@v0.8
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          app-file: app.zip
+
+      - uses: igorsmotto/action-maestro-cloud@v0.8
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+```
+
 # Accessing output
 
 The following output variables are set by the action:
@@ -195,11 +212,13 @@ The following output variables are set by the action:
 - `MAESTRO_CLOUD_CONSOLE_URL` - link to the Maestro Cloud console
 - `MAESTRO_CLOUD_UPLOAD_STATUS` - status of the Upload (not available in `async` mode)
 - `MAESTRO_CLOUD_FLOW_RESULTS` - list of Flows and their results (not available in `async` mode)
+- `MAESTRO_CLOUD_APP_BINARY_ID` - id of the binary uploaded
 
 In order to access these variables you can use the following approach:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.5.0
+- id: upload
+  uses: mobile-dev-inc/action-maestro-cloud@v1.5.0
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <your_app_file>
@@ -211,4 +230,5 @@ In order to access these variables you can use the following approach:
     echo "Console URL: ${{ steps.upload.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
     echo "Flow Results: ${{ steps.upload.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
     echo "Upload Status: ${{ steps.upload.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
+    echo "App Binary ID:: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
 ```

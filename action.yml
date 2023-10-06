@@ -12,7 +12,10 @@ inputs:
     required: false
   app-file:
     description: "The app file to upload to Maestro Cloud"
-    required: true
+    required: false
+  app-binary-id:
+    description: "The app binary already uploaded to Maestro Cloud"
+    required: false
   mapping-file:
     description: "The Proguard mapping file to upload to Maestro Cloud"
     required: false

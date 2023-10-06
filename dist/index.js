@@ -46572,7 +46572,9 @@ class ApiClient {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
             formData.set('request', JSON.stringify(request));
-            formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
+            if (appFile) {
+                formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
+            }
             if (workspaceZip) {
                 formData.set('workspace', (0, node_fetch_1.fileFromSync)(workspaceZip));
             }
@@ -47044,10 +47046,13 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags } = yield (0, params_1.getParameters)();
-    const appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
-    if (!knownAppTypes.includes(appFile.type)) {
-        throw new Error(`Unsupported app file type: ${appFile.type}`);
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId } = yield (0, params_1.getParameters)();
+    let appFile = null;
+    if (appFilePath !== "") {
+        appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
+        if (!knownAppTypes.includes(appFile.type)) {
+            throw new Error(`Unsupported app file type: ${appFile.type}`);
+        }
     }
     const workspaceZip = yield createWorkspaceZip(workspaceFolder);
     const client = new ApiClient_1.default(apiKey, apiUrl);
@@ -47065,11 +47070,13 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         iOSVersion: iOSVersion,
         includeTags: includeTags,
         excludeTags: excludeTags,
+        appBinaryId: appBinaryId || undefined,
     };
-    const { uploadId, teamId, targetId: appId } = yield client.uploadRequest(request, appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
+    const { uploadId, teamId, targetId: appId, appBinaryId: uploadedBinaryId } = yield client.uploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
     const consoleUrl = (0, exports.getConsoleUrl)(uploadId, teamId, appId);
     (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
     core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
+    core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', uploadedBinaryId);
     !async && new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling();
 });
 run().catch(e => {
@@ -47232,7 +47239,6 @@ function getParameters() {
         const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev';
         const name = core.getInput('name', { required: false }) || getInferredName();
         const apiKey = core.getInput('api-key', { required: true });
-        const appFilePath = core.getInput('app-file', { required: true });
         const mappingFileInput = core.getInput('mapping-file', { required: false });
         const workspaceFolder = core.getInput('workspace', { required: false });
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
@@ -47241,6 +47247,11 @@ function getParameters() {
         const iOSVersionString = core.getInput('ios-version', { required: false });
         const includeTags = parseTags(core.getInput('include-tags', { required: false }));
         const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
+        const appFilePath = core.getInput('app-file', { required: false });
+        const appBinaryId = core.getInput('app-binary-id', { required: false });
+        if (!(appFilePath !== "") !== (appBinaryId !== "")) {
+            throw new Error("Either app-file or app-binary-id must be used");
+        }
         var env = {};
         env = core.getMultilineInput('env', { required: false })
             .map(it => {
@@ -47278,7 +47289,8 @@ function getParameters() {
             androidApiLevel,
             iOSVersion,
             includeTags,
-            excludeTags
+            excludeTags,
+            appBinaryId
         };
     });
 }

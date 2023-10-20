@@ -22,6 +22,7 @@ export type Params = {
   includeTags: string[],
   excludeTags: string[],
   appBinaryId: string,
+  deviceLocale?: string,
 }
 
 function getBranchName(): string {
@@ -123,6 +124,8 @@ export async function getParameters(): Promise<Params> {
     throw new Error("Either app-file or app-binary-id must be used")
   }
 
+  const deviceLocale = core.getInput('device-locale', { required: false })
+
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
     .map(it => {
@@ -165,6 +168,7 @@ export async function getParameters(): Promise<Params> {
     iOSVersion,
     includeTags,
     excludeTags,
-    appBinaryId
+    appBinaryId,
+    deviceLocale,
   }
 }

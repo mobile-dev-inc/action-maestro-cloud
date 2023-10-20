@@ -194,15 +194,28 @@ You can use an already uploaded App binary in Maestro Cloud using the `app-binar
 
 ```yaml
       - id: upload
-        uses: igorsmotto/action-maestro-cloud@v1.6.0
+        uses: mobile-dev-inc/action-maestro-cloud@v1.6.0
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           app-file: app.zip
 
-      - uses: igorsmotto/action-maestro-cloud@v1.6.0
+      - uses: mobile-dev-inc/action-maestro-cloud@v1.6.0
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+```
+
+# Configuring the locale for the device where the flows will be executed
+
+To switch the device locale on a remote device from a default one (en_US) `device-locale` parameter should be used. The value is a combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code, i.e. "de_DE" for Germany.
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.6.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
+    device-locale: de_DE
+
 ```
 
 # Accessing output

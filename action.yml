@@ -34,6 +34,9 @@ inputs:
   ios-version:
     description: "iOS version to run your flow against"
     required: false
+  device-locale:
+    description: "Device locale to run your flow against"
+    required: false
   include-tags:
     description: "List of tags that will remove flows that does not have the provided tags"
     required: false

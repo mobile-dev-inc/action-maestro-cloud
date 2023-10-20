@@ -22,7 +22,8 @@ export type UploadRequest = {
   iOSVersion?: number,
   includeTags: string[],
   excludeTags: string[],
-  appBinaryId?: string
+  appBinaryId?: string,
+  deviceLocale?: string,
 }
 
 // irrelevant data has been factored out from this model

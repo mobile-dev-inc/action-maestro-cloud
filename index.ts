@@ -61,7 +61,8 @@ const run = async () => {
     iOSVersion,
     includeTags,
     excludeTags,
-    appBinaryId
+    appBinaryId,
+    deviceLocale,
   } = await getParameters()
 
   let appFile = null
@@ -93,6 +94,7 @@ const run = async () => {
     includeTags: includeTags,
     excludeTags: excludeTags,
     appBinaryId: appBinaryId || undefined,
+    deviceLocale: deviceLocale || undefined,
   }
 
   const { uploadId, teamId, targetId: appId, appBinaryId: uploadedBinaryId } = await client.uploadRequest(

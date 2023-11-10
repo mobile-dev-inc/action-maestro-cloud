@@ -47046,7 +47046,7 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, } = yield (0, params_1.getParameters)();
     let appFile = null;
     if (appFilePath !== "") {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
@@ -47071,6 +47071,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         includeTags: includeTags,
         excludeTags: excludeTags,
         appBinaryId: appBinaryId || undefined,
+        deviceLocale: deviceLocale || undefined,
     };
     const { uploadId, teamId, targetId: appId, appBinaryId: uploadedBinaryId } = yield client.uploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
     const consoleUrl = (0, exports.getConsoleUrl)(uploadId, teamId, appId);
@@ -47252,6 +47253,7 @@ function getParameters() {
         if (!(appFilePath !== "") !== (appBinaryId !== "")) {
             throw new Error("Either app-file or app-binary-id must be used");
         }
+        const deviceLocale = core.getInput('device-locale', { required: false });
         var env = {};
         env = core.getMultilineInput('env', { required: false })
             .map(it => {
@@ -47290,7 +47292,8 @@ function getParameters() {
             iOSVersion,
             includeTags,
             excludeTags,
-            appBinaryId
+            appBinaryId,
+            deviceLocale,
         };
     });
 }

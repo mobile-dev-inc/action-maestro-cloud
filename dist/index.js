@@ -46725,6 +46725,7 @@ class StatusPoller {
         this.uploadId = uploadId;
         this.consoleUrl = consoleUrl;
         this.completedFlows = {};
+        this.stopped = false;
     }
     markFailed(msg) {
         core.setFailed(msg);
@@ -46732,12 +46733,15 @@ class StatusPoller {
     onError(errMsg, error) {
         let msg = `${errMsg}`;
         if (!!error)
-            msg += ` - receveied error ${error}`;
+            msg += ` - received error ${error}`;
         msg += `. View the Upload in the console for more information: ${this.consoleUrl}`;
         this.markFailed(msg);
     }
     poll(sleep, prevErrorCount = 0) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.stopped) {
+                return;
+            }
             try {
                 const { completed, status, flows } = yield this.client.getUploadStatus(this.uploadId);
                 for (const flow of flows.filter(isCompleted)) {
@@ -46790,15 +46794,16 @@ class StatusPoller {
             }
         });
     }
-    registerTimeout() {
+    registerTimeout(timeoutInMinutes) {
         this.timeout = setTimeout(() => {
             (0, log_1.warning)(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`);
-        }, WAIT_TIMEOUT_MS);
+            this.stopped = true;
+        }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS);
     }
     teardown() {
         this.timeout && clearTimeout(this.timeout);
     }
-    startPolling() {
+    startPolling(timeout) {
         try {
             this.poll(INTERVAL_MS);
             (0, log_1.info)('Waiting for analyses to complete...\n');
@@ -46806,7 +46811,7 @@ class StatusPoller {
         catch (err) {
             this.markFailed(err instanceof Error ? err.message : `${err} `);
         }
-        this.registerTimeout();
+        this.registerTimeout(timeout);
     }
 }
 exports["default"] = StatusPoller;
@@ -47046,7 +47051,7 @@ const getConsoleUrl = (uploadId, teamId, appId) => {
 };
 exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, timeout, } = yield (0, params_1.getParameters)();
     let appFile = null;
     if (appFilePath !== "") {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
@@ -47078,7 +47083,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
     core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
     core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', uploadedBinaryId);
-    !async && new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling();
+    !async && new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
 });
 run().catch(e => {
     core.setFailed(`Error running Maestro Cloud Upload Action: ${e.message}`);
@@ -47223,6 +47228,9 @@ function getAndroidApiLevel(apiLevel) {
 function getIOSVersion(iosVersion) {
     return iosVersion ? +iosVersion : undefined;
 }
+function getTimeout(timeout) {
+    return timeout ? +timeout : undefined;
+}
 function parseTags(tags) {
     if (tags === undefined || tags === '')
         return [];
@@ -47254,6 +47262,7 @@ function getParameters() {
             throw new Error("Either app-file or app-binary-id must be used");
         }
         const deviceLocale = core.getInput('device-locale', { required: false });
+        const timeoutString = core.getInput('timeout', { required: false });
         var env = {};
         env = core.getMultilineInput('env', { required: false })
             .map(it => {
@@ -47274,6 +47283,7 @@ function getParameters() {
         const pullRequestId = getPullRequestId();
         const androidApiLevel = getAndroidApiLevel(androidApiLevelString);
         const iOSVersion = getIOSVersion(iOSVersionString);
+        const timeout = getTimeout(timeoutString);
         return {
             apiUrl,
             name,
@@ -47294,6 +47304,7 @@ function getParameters() {
             excludeTags,
             appBinaryId,
             deviceLocale,
+            timeout,
         };
     });
 }

@@ -93,6 +93,10 @@ export default class StatusPoller {
     sleep: number,
     prevErrorCount: number = 0
   ) {
+    if (this.stopped) {
+      return
+    }
+
     try {
       const { completed, status, flows } = await this.client.getUploadStatus(this.uploadId)
       for (const flow of flows.filter(isCompleted)) {
@@ -102,7 +106,7 @@ export default class StatusPoller {
         }
       }
 
-      if (completed && !this.stopped) {
+      if (completed) {
         this.teardown()
 
         console.log('')

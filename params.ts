@@ -23,6 +23,7 @@ export type Params = {
   excludeTags: string[],
   appBinaryId: string,
   deviceLocale?: string,
+  timeout?: number,
 }
 
 function getBranchName(): string {
@@ -89,6 +90,10 @@ function getIOSVersion(iosVersion?: string): number | undefined {
   return iosVersion ? +iosVersion : undefined
 }
 
+function getTimeout(timeout?: string): number | undefined {
+  return timeout ? +timeout : undefined
+}
+
 function parseTags(tags?: string): string[] {
   if (tags === undefined || tags === '') return []
 
@@ -125,6 +130,7 @@ export async function getParameters(): Promise<Params> {
   }
 
   const deviceLocale = core.getInput('device-locale', { required: false })
+  const timeoutString = core.getInput('timeout', { required: false })
 
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
@@ -149,6 +155,7 @@ export async function getParameters(): Promise<Params> {
   const pullRequestId = getPullRequestId()
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
   const iOSVersion = getIOSVersion(iOSVersionString)
+  const timeout = getTimeout(timeoutString)
 
   return {
     apiUrl,
@@ -170,5 +177,6 @@ export async function getParameters(): Promise<Params> {
     excludeTags,
     appBinaryId,
     deviceLocale,
+    timeout,
   }
 }

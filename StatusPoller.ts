@@ -16,10 +16,10 @@ const getCanceledStatusMessage = (reason?: CancellationReason): string => {
 
     case CancellationReason.TIMEOUT:
       return 'Timeout';
-    
+
     case CancellationReason.INFRA_ERROR:
     default:
-        return 'Canceled';
+      return 'Canceled';
   }
 }
 
@@ -70,11 +70,12 @@ const printUploadResult = (status: BenchmarkStatus, flows: Flow[]) => {
 export default class StatusPoller {
   timeout: NodeJS.Timeout | undefined
   completedFlows: { [flowName: string]: string } = {}
+  stopped: Boolean = false
 
   constructor(
     private client: ApiClient,
     private uploadId: string,
-    private consoleUrl: string
+    private consoleUrl: string,
   ) { }
 
   markFailed(msg: string) {
@@ -83,7 +84,7 @@ export default class StatusPoller {
 
   onError(errMsg: string, error?: any) {
     let msg = `${errMsg}`
-    if (!!error) msg += ` - receveied error ${error}`
+    if (!!error) msg += ` - received error ${error}`
     msg += `. View the Upload in the console for more information: ${this.consoleUrl}`
     this.markFailed(msg)
   }
@@ -92,6 +93,10 @@ export default class StatusPoller {
     sleep: number,
     prevErrorCount: number = 0
   ) {
+    if (this.stopped) {
+      return
+    }
+
     try {
       const { completed, status, flows } = await this.client.getUploadStatus(this.uploadId)
       for (const flow of flows.filter(isCompleted)) {
@@ -142,17 +147,18 @@ export default class StatusPoller {
     }
   }
 
-  registerTimeout() {
+  registerTimeout(timeoutInMinutes?: number) {
     this.timeout = setTimeout(() => {
       warning(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`)
-    }, WAIT_TIMEOUT_MS)
+      this.stopped = true
+    }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS)
   }
 
   teardown() {
     this.timeout && clearTimeout(this.timeout)
   }
 
-  startPolling() {
+  startPolling(timeout?: number) {
     try {
       this.poll(INTERVAL_MS)
       info('Waiting for analyses to complete...\n')
@@ -160,6 +166,6 @@ export default class StatusPoller {
       this.markFailed(err instanceof Error ? err.message : `${err} `)
     }
 
-    this.registerTimeout()
+    this.registerTimeout(timeout)
   }
 }

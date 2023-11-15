@@ -63,6 +63,7 @@ const run = async () => {
     excludeTags,
     appBinaryId,
     deviceLocale,
+    timeout,
   } = await getParameters()
 
   let appFile = null
@@ -108,7 +109,7 @@ const run = async () => {
   core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
   core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', uploadedBinaryId)
 
-  !async && new StatusPoller(client, uploadId, consoleUrl).startPolling()
+  !async && new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
 }
 
 run().catch(e => {

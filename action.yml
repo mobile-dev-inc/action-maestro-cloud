@@ -43,6 +43,9 @@ inputs:
   exclude-tags:
     description: "List of tags that will remove flows containing the provided tags"
     required: false
+  timeout:
+    description: "Minutes to timeout while waiting for results"
+    required: false
 runs:
   using: "node16"
   main: "dist/index.js"

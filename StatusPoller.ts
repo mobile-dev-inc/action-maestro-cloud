@@ -70,11 +70,12 @@ const printUploadResult = (status: BenchmarkStatus, flows: Flow[]) => {
 export default class StatusPoller {
   timeout: NodeJS.Timeout | undefined
   completedFlows: { [flowName: string]: string } = {}
+  stopped: Boolean = false
 
   constructor(
     private client: ApiClient,
     private uploadId: string,
-    private consoleUrl: string
+    private consoleUrl: string,
   ) { }
 
   markFailed(msg: string) {
@@ -101,7 +102,7 @@ export default class StatusPoller {
         }
       }
 
-      if (completed) {
+      if (completed && !this.stopped) {
         this.teardown()
 
         console.log('')
@@ -145,6 +146,7 @@ export default class StatusPoller {
   registerTimeout(timeoutInMinutes?: number) {
     this.timeout = setTimeout(() => {
       warning(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`)
+      this.stopped = true
     }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS)
   }
 

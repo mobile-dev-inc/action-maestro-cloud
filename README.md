@@ -131,6 +131,16 @@ If you don't want the action to wait until the Upload has been completed as is t
     async: true
 ```
 
+Alternatively, you might want to still wait for the action but would like to configure the timeout period, set `timeout` argument to a number of minutes:
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.7.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
+    timeout: 90 # Wait for 90 minutes
+```
+
 # Adding environment variables
 
 If you want to pass environment variables along with your upload, add a multiline `env` argument:

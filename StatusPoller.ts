@@ -16,10 +16,10 @@ const getCanceledStatusMessage = (reason?: CancellationReason): string => {
 
     case CancellationReason.TIMEOUT:
       return 'Timeout';
-    
+
     case CancellationReason.INFRA_ERROR:
     default:
-        return 'Canceled';
+      return 'Canceled';
   }
 }
 
@@ -83,7 +83,7 @@ export default class StatusPoller {
 
   onError(errMsg: string, error?: any) {
     let msg = `${errMsg}`
-    if (!!error) msg += ` - receveied error ${error}`
+    if (!!error) msg += ` - received error ${error}`
     msg += `. View the Upload in the console for more information: ${this.consoleUrl}`
     this.markFailed(msg)
   }
@@ -142,17 +142,17 @@ export default class StatusPoller {
     }
   }
 
-  registerTimeout() {
+  registerTimeout(timeoutInMinutes?: number) {
     this.timeout = setTimeout(() => {
       warning(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`)
-    }, WAIT_TIMEOUT_MS)
+    }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS)
   }
 
   teardown() {
     this.timeout && clearTimeout(this.timeout)
   }
 
-  startPolling() {
+  startPolling(timeout?: number) {
     try {
       this.poll(INTERVAL_MS)
       info('Waiting for analyses to complete...\n')
@@ -160,6 +160,6 @@ export default class StatusPoller {
       this.markFailed(err instanceof Error ? err.message : `${err} `)
     }
 
-    this.registerTimeout()
+    this.registerTimeout(timeout)
   }
 }

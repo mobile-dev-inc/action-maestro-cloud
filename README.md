@@ -157,7 +157,7 @@ If you want to pass environment variables along with your upload, add a multilin
 
 # Using tags
 
-You can use Maestro (Tags)[https://maestro.mobile.dev/cli/tags] to filter which Flows to send to Maestro Cloud:
+You can use Maestro [Tags](https://maestro.mobile.dev/cli/tags) to filter which Flows to send to Maestro Cloud:
 
 You can either pass a single value, or comma-separated (`,`) values.
 
@@ -174,7 +174,7 @@ You can either pass a single value, or comma-separated (`,`) values.
 
 You can specify what Android API level to use when running in Maestro Cloud using the `android-api-level` parameter.
 
-The default API level is 30.
+The default API level is 30. [Refer to Maestro Cloud docs](https://cloud.mobile.dev/reference/device-configuration) for available Android emulator API levels.
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
@@ -188,7 +188,7 @@ The default API level is 30.
 
 You can specify what **major** iOS Version to use when running in Maestro Cloud using the `ios-version` parameter.
 
-The default iOS version is 15.
+The default iOS version is 15. [Refer to Maestro Cloud docs](https://cloud.mobile.dev/reference/device-configuration) for available iOS simulator versions.
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.8.0

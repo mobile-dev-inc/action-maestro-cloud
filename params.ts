@@ -137,6 +137,7 @@ export async function getParameters(): Promise<Params> {
   const deviceLocale = core.getInput('device-locale', { required: false })
   const timeoutString = core.getInput('timeout', { required: false })
   const failOnCancellationString = core.getInput('fail-on-cancellation', { required: false })
+  console.log(failOnCancellationString)
 
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
@@ -163,6 +164,7 @@ export async function getParameters(): Promise<Params> {
   const iOSVersion = getIOSVersion(iOSVersionString)
   const timeout = getTimeout(timeoutString)
   const failOnCancellation = getFailOnCancellation(failOnCancellationString)
+  console.log(failOnCancellation)
 
   return {
     apiUrl,

@@ -119,6 +119,8 @@ export default class StatusPoller {
         core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status)
         core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows)
 
+        console.log(`fail on cancellation: ${this.failOnCancellation}`)
+
         if (status === BenchmarkStatus.ERROR || (status === BenchmarkStatus.CANCELED && !!this.failOnCancellation)) {
           const resultStr = status === BenchmarkStatus.ERROR ? getFailedFlowsCountStr(flows) : 'One or more Flows were Canceled, marking the workflow as failed'
           console.log('')

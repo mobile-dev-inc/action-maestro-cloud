@@ -76,6 +76,7 @@ export default class StatusPoller {
     private client: ApiClient,
     private uploadId: string,
     private consoleUrl: string,
+    private failOnCancellation: boolean,
   ) { }
 
   markFailed(msg: string) {
@@ -118,8 +119,8 @@ export default class StatusPoller {
         core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status)
         core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows)
 
-        if (status === BenchmarkStatus.ERROR) {
-          const resultStr = getFailedFlowsCountStr(flows)
+        if (status === BenchmarkStatus.ERROR || (status === BenchmarkStatus.CANCELED && !!this.failOnCancellation)) {
+          const resultStr = status === BenchmarkStatus.ERROR ? getFailedFlowsCountStr(flows) : 'One or more Flows were Canceled, marking the workflow as failed'
           console.log('')
           this.markFailed(resultStr)
         }

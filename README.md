@@ -203,16 +203,16 @@ The default iOS version is 15. [Refer to Maestro Cloud docs](https://cloud.mobil
 You can use an already uploaded App binary in Maestro Cloud using the `app-binary-id` parameter.
 
 ```yaml
-      - id: upload
-        uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          app-file: app.zip
+- id: upload
+  uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
 
-      - uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+- uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
 ```
 
 # Configuring the locale for the device where the flows will be executed
@@ -225,7 +225,18 @@ To switch the device locale on a remote device from a default one (en_US) `devic
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
     device-locale: de_DE
+```
 
+# Fail on cancellation
+
+By default, to not block your CI pipeline, a canceled Upload will not result in the workflow being failed. However, if your Upload is marked as canceled due to timeouts, Flows being skipped due to dependency Flows failing or other issues, you can set the `fail-on-cancellation` argument to have the GitHub Actions workflow be marked as failed:
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.8.0
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    app-file: app.zip
+    fail-on-cancellation: true
 ```
 
 # Accessing output

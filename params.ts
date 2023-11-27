@@ -1,6 +1,6 @@
 import * as github from '@actions/github';
 import * as core from '@actions/core';
-import { AppFile, validateMappingFile } from './app_file';
+import { validateMappingFile } from './app_file';
 import { PushEvent } from '@octokit/webhooks-definitions/schema'
 
 export type Params = {
@@ -24,6 +24,7 @@ export type Params = {
   appBinaryId: string,
   deviceLocale?: string,
   timeout?: number,
+  failOnCancellation: boolean
 }
 
 function getBranchName(): string {
@@ -94,6 +95,10 @@ function getTimeout(timeout?: string): number | undefined {
   return timeout ? +timeout : undefined
 }
 
+function getFailOnCancellation(failOnCancellationString?: string): boolean {
+  return failOnCancellationString === 'true'
+}
+
 function parseTags(tags?: string): string[] {
   if (tags === undefined || tags === '') return []
 
@@ -131,6 +136,7 @@ export async function getParameters(): Promise<Params> {
 
   const deviceLocale = core.getInput('device-locale', { required: false })
   const timeoutString = core.getInput('timeout', { required: false })
+  const failOnCancellationString = core.getInput('fail-on-cancellation', { required: false })
 
   var env: { [key: string]: string } = {}
   env = core.getMultilineInput('env', { required: false })
@@ -156,6 +162,7 @@ export async function getParameters(): Promise<Params> {
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
   const iOSVersion = getIOSVersion(iOSVersionString)
   const timeout = getTimeout(timeoutString)
+  const failOnCancellation = getFailOnCancellation(failOnCancellationString)
 
   return {
     apiUrl,
@@ -178,5 +185,6 @@ export async function getParameters(): Promise<Params> {
     appBinaryId,
     deviceLocale,
     timeout,
+    failOnCancellation
   }
 }

@@ -255,3 +255,25 @@ In order to access these variables you can use the following approach:
     echo "Upload Status: ${{ steps.upload.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
     echo "App Binary ID:: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
 ```
+
+## Output types 
+
+- `MAESTRO_CLOUD_UPLOAD_STATUS`
+
+  Any of the following values:
+  ```
+  PENDING
+  RUNNING
+  SUCCESS
+  ERROR
+  CANCELED
+  WARNING
+  ```
+
+- `MAESTRO_CLOUD_FLOW_RESULTS`
+
+   An array of objects with at least `name`, `status`, and `errors` fields.
+   ```json
+   [{"name":"my-first-flow","status":"SUCCESS","errors":[]},{"name":"my-second-flow","status":"SUCCESS","errors":[]},{"name":"my-cancelled-flow","status":"CANCELED","errors":[],"cancellationReason":"INFRA_ERROR"}]
+   ```
+

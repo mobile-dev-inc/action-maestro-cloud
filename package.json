@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "ncc build index.ts",
     "release": "./_release.sh"
   },
   "repository": {

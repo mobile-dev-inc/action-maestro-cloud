@@ -10,7 +10,7 @@ if [[ -z "$VERSION" ]]; then
   exit 1
 fi
 
-ncc build index.ts
+npm run build
 sed -i.bkp "s/action-maestro-cloud@v.*/action-maestro-cloud@v${VERSION}/g" README.md
 git add -A
 git commit --allow-empty -m "Version ${VERSION}"

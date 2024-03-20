@@ -253,7 +253,7 @@ In order to access these variables you can use the following approach:
     echo "Console URL: ${{ steps.upload.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
     echo "Flow Results: ${{ steps.upload.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
     echo "Upload Status: ${{ steps.upload.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
-    echo "App Binary ID:: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
+    echo "App Binary ID: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
 ```
 
 ## Output types 

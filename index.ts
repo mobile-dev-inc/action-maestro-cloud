@@ -1,5 +1,9 @@
 import * as core from "@actions/core";
-import ApiClient, { UploadRequest } from "./ApiClient";
+import ApiClient, {
+  UploadRequest,
+  UploadResponse,
+  RobinUploadResponse,
+} from "./ApiClient";
 import { validateAppFile } from "./app_file";
 import { zipFolder, zipIfFolder } from "./archive_utils";
 import { getParameters } from "./params";
@@ -40,14 +44,6 @@ const createWorkspaceZip = async (
   }
   await zipFolder(resolvedWorkspaceFolder, "workspace.zip");
   return "workspace.zip";
-};
-
-export const getConsoleUrl = (
-  uploadId: string,
-  teamId: string,
-  appId: string
-): string => {
-  return `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appId}`;
 };
 
 const run = async () => {
@@ -105,26 +101,40 @@ const run = async () => {
     deviceLocale: deviceLocale || undefined,
   };
 
-  const {
-    uploadId,
-    teamId,
-    targetId: appId,
-    appBinaryId: uploadedBinaryId,
-  } = await client.uploadRequest(
-    request,
-    appFile && appFile.path,
-    workspaceZip,
-    mappingFile && (await zipIfFolder(mappingFile))
-  );
-  const consoleUrl = getConsoleUrl(uploadId, teamId, appId);
-  info(
-    `Visit the web console for more details about the upload: ${consoleUrl}\n`
-  );
-  core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
-  core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", uploadedBinaryId);
+  const response: UploadResponse | RobinUploadResponse =
+    await client.uploadRequest(
+      request,
+      appFile && appFile.path,
+      workspaceZip,
+      mappingFile && (await zipIfFolder(mappingFile))
+    );
 
-  !async &&
-    new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout);
+  // If project Exist - Its Robin
+  if (!!projectId) {
+    const { uploadId, orgId, appId, appBinaryId } =
+      response as RobinUploadResponse;
+    const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
+    core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
+    core.setOutput("ROBIN_APP_BINARY_ID", response.appBinaryId);
+    !async &&
+      new StatusPoller(client, response.uploadId, consoleUrl).startPolling(
+        timeout
+      );
+  }
+  // If project Exist - Its Cloud
+  else {
+    const { uploadId, teamId, appBinaryId } = response as UploadResponse;
+    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryId}`;
+    info(
+      `Visit the web console for more details about the upload: ${consoleUrl}\n`
+    );
+    core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
+    core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", response.appBinaryId);
+    !async &&
+      new StatusPoller(client, response.uploadId, consoleUrl).startPolling(
+        timeout
+      );
+  }
 };
 
 run().catch((e) => {

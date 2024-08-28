@@ -34,6 +34,13 @@ export type UploadResponse = {
   appBinaryId: string;
 };
 
+export type RobinUploadResponse = {
+  uploadId: string;
+  orgId: string;
+  appId: string;
+  appBinaryId: string;
+};
+
 export class UploadStatusError {
   constructor(public status: number, public text: string) {}
 }
@@ -71,7 +78,7 @@ export default class ApiClient {
     appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null
-  ): Promise<UploadResponse> {
+  ): Promise<UploadResponse | RobinUploadResponse> {
     const formData = new FormData();
 
     formData.set("request", JSON.stringify(request));
@@ -102,7 +109,7 @@ export default class ApiClient {
           `Request to ${res.url} failed (${res.status}): ${body}`
         );
       }
-      return (await res.json()) as UploadResponse;
+      return (await res.json()) as RobinUploadResponse;
     }
     // Else if no project id - Hit Cloud
     else {

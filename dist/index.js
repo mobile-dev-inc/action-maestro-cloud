@@ -46564,54 +46564,94 @@ var CancellationReason;
     CancellationReason["TIMEOUT"] = "TIMEOUT";
 })(CancellationReason = exports.CancellationReason || (exports.CancellationReason = {}));
 class ApiClient {
-    constructor(apiKey, apiUrl) {
+    constructor(apiKey, apiUrl, projectId) {
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
+        this.projectId = projectId;
     }
     uploadRequest(request, appFile, workspaceZip, mappingFile) {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
-            formData.set('request', JSON.stringify(request));
+            formData.set("request", JSON.stringify(request));
             if (appFile) {
-                formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
+                formData.set("app_binary", (0, node_fetch_1.fileFromSync)(appFile));
             }
             if (workspaceZip) {
-                formData.set('workspace', (0, node_fetch_1.fileFromSync)(workspaceZip));
+                formData.set("workspace", (0, node_fetch_1.fileFromSync)(workspaceZip));
             }
             if (mappingFile) {
-                formData.set('mapping', (0, node_fetch_1.fileFromSync)(mappingFile));
+                formData.set("mapping", (0, node_fetch_1.fileFromSync)(mappingFile));
             }
-            const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                },
-                body: formData
-            });
-            if (!res.ok) {
-                const body = yield res.text();
-                throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+            // If Project Id exist - Hit robin
+            if (!!this.projectId) {
+                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${this.apiKey}`,
+                    },
+                    body: formData,
+                });
+                if (!res.ok) {
+                    const body = yield res.text();
+                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+                }
+                return (yield res.json());
             }
-            return yield res.json();
+            // Else if no project id - Hit Cloud
+            else {
+                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${this.apiKey}`,
+                    },
+                    body: formData,
+                });
+                if (!res.ok) {
+                    const body = yield res.text();
+                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+                }
+                return (yield res.json());
+            }
         });
     }
     getUploadStatus(uploadId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                },
-            });
-            if (!res.ok) {
-                const body = yield res.text();
-                throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+            // If Project Id exist - Hit robin
+            if (!!this.projectId) {
+                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${this.apiKey}`,
+                    },
+                });
+                if (!res.ok) {
+                    const body = yield res.text();
+                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+                }
+                if (res.status >= 400) {
+                    const text = yield res.text();
+                    Promise.reject(new UploadStatusError(res.status, text));
+                }
+                return (yield res.json());
             }
-            if (res.status >= 400) {
-                const text = yield res.text();
-                Promise.reject(new UploadStatusError(res.status, text));
+            // Else if no project id - Hit Cloud
+            else {
+                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${this.apiKey}`,
+                    },
+                });
+                if (!res.ok) {
+                    const body = yield res.text();
+                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+                }
+                if (res.status >= 400) {
+                    const text = yield res.text();
+                    Promise.reject(new UploadStatusError(res.status, text));
+                }
+                return (yield res.json());
             }
-            return yield res.json();
         });
     }
 }
@@ -47007,7 +47047,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getConsoleUrl = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const ApiClient_1 = __importDefault(__nccwpck_require__(9494));
 const app_file_1 = __nccwpck_require__(9617);
@@ -47016,9 +47055,9 @@ const params_1 = __nccwpck_require__(805);
 const fs_1 = __nccwpck_require__(7147);
 const StatusPoller_1 = __importDefault(__nccwpck_require__(2575));
 const log_1 = __nccwpck_require__(3826);
-const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE'];
+const knownAppTypes = ["ANDROID_APK", "IOS_BUNDLE"];
 const listFilesInDirectory = () => {
-    const files = (0, fs_1.readdirSync)('.', { withFileTypes: true });
+    const files = (0, fs_1.readdirSync)(".", { withFileTypes: true });
     console.log("Directory contents:");
     for (const f of files) {
         console.log(f.isDirectory() ? `${f.name}/` : f.name);
@@ -47027,12 +47066,12 @@ const listFilesInDirectory = () => {
 const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0, function* () {
     let resolvedWorkspaceFolder = workspaceFolder;
     if (resolvedWorkspaceFolder === null || (workspaceFolder === null || workspaceFolder === void 0 ? void 0 : workspaceFolder.length) === 0) {
-        if ((0, fs_1.existsSync)('.maestro')) {
-            resolvedWorkspaceFolder = '.maestro';
+        if ((0, fs_1.existsSync)(".maestro")) {
+            resolvedWorkspaceFolder = ".maestro";
             (0, log_1.info)("Packaging .maestro folder");
         }
-        else if ((0, fs_1.existsSync)('.mobiledev')) {
-            resolvedWorkspaceFolder = '.mobiledev';
+        else if ((0, fs_1.existsSync)(".mobiledev")) {
+            resolvedWorkspaceFolder = ".mobiledev";
             (0, log_1.info)("Packaging .mobiledev folder");
         }
         else {
@@ -47043,15 +47082,11 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
     else if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
         throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
     }
-    yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, 'workspace.zip');
-    return 'workspace.zip';
+    yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, "workspace.zip");
+    return "workspace.zip";
 });
-const getConsoleUrl = (uploadId, teamId, appId) => {
-    return `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appId}`;
-};
-exports.getConsoleUrl = getConsoleUrl;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, timeout, } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, timeout, projectId, } = yield (0, params_1.getParameters)();
     let appFile = null;
     if (appFilePath !== "") {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
@@ -47060,7 +47095,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     const workspaceZip = yield createWorkspaceZip(workspaceFolder);
-    const client = new ApiClient_1.default(apiKey, apiUrl);
+    const client = new ApiClient_1.default(apiKey, apiUrl, projectId);
     (0, log_1.info)("Uploading to Maestro Cloud");
     const request = {
         benchmarkName: name,
@@ -47070,7 +47105,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         repoName: repoName,
         pullRequestId: pullRequestId,
         env: env,
-        agent: 'github',
+        agent: "github",
         androidApiLevel: androidApiLevel,
         iOSVersion: iOSVersion,
         includeTags: includeTags,
@@ -47078,14 +47113,28 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         appBinaryId: appBinaryId || undefined,
         deviceLocale: deviceLocale || undefined,
     };
-    const { uploadId, teamId, targetId: appId, appBinaryId: uploadedBinaryId } = yield client.uploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
-    const consoleUrl = (0, exports.getConsoleUrl)(uploadId, teamId, appId);
-    (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
-    core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
-    core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', uploadedBinaryId);
-    !async && new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
+    const response = yield client.uploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
+    // If project Exist - Its Robin
+    if (!!projectId) {
+        const { uploadId, orgId, appId, appBinaryId } = response;
+        const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
+        core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
+        core.setOutput("ROBIN_APP_BINARY_ID", response.appBinaryId);
+        !async &&
+            new StatusPoller_1.default(client, response.uploadId, consoleUrl).startPolling(timeout);
+    }
+    // If project Exist - Its Cloud
+    else {
+        const { uploadId, teamId, appBinaryId } = response;
+        const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryId}`;
+        (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
+        core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
+        core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", response.appBinaryId);
+        !async &&
+            new StatusPoller_1.default(client, response.uploadId, consoleUrl).startPolling(timeout);
+    }
 });
-run().catch(e => {
+run().catch((e) => {
     core.setFailed(`Error running Maestro Cloud Upload Action: ${e.message}`);
 });
 
@@ -47214,7 +47263,7 @@ function getInferredName() {
     const pullRequestTitle = getPullRequestTitle();
     if (pullRequestTitle)
         return pullRequestTitle;
-    if (github.context.eventName === 'push') {
+    if (github.context.eventName === "push") {
         const pushPayload = github.context.payload;
         const commitMessage = (_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message;
         if (commitMessage)
@@ -47232,11 +47281,10 @@ function getTimeout(timeout) {
     return timeout ? +timeout : undefined;
 }
 function parseTags(tags) {
-    if (tags === undefined || tags === '')
+    if (tags === undefined || tags === "")
         return [];
-    if (tags.includes(',')) {
-        const arrayTags = tags.split(',')
-            .map(it => it.trim());
+    if (tags.includes(",")) {
+        const arrayTags = tags.split(",").map((it) => it.trim());
         if (!Array.isArray(arrayTags))
             throw new Error("tags must be an Array.");
         return arrayTags;
@@ -47245,32 +47293,39 @@ function parseTags(tags) {
 }
 function getParameters() {
     return __awaiter(this, void 0, void 0, function* () {
-        const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev';
-        const name = core.getInput('name', { required: false }) || getInferredName();
-        const apiKey = core.getInput('api-key', { required: true });
-        const mappingFileInput = core.getInput('mapping-file', { required: false });
-        const workspaceFolder = core.getInput('workspace', { required: false });
+        const projectId = core.getInput("project-id", { required: false }) || undefined;
+        const apiUrl = core.getInput("api-url", { required: false }) ||
+            (projectId
+                ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
+                : "https://api.mobile.dev");
+        const name = core.getInput("name", { required: false }) || getInferredName();
+        const apiKey = core.getInput("api-key", { required: true });
+        const mappingFileInput = core.getInput("mapping-file", { required: false });
+        const workspaceFolder = core.getInput("workspace", { required: false });
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
-        const async = core.getInput('async', { required: false }) === 'true';
-        const androidApiLevelString = core.getInput('android-api-level', { required: false });
-        const iOSVersionString = core.getInput('ios-version', { required: false });
-        const includeTags = parseTags(core.getInput('include-tags', { required: false }));
-        const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
-        const appFilePath = core.getInput('app-file', { required: false });
-        const appBinaryId = core.getInput('app-binary-id', { required: false });
+        const async = core.getInput("async", { required: false }) === "true";
+        const androidApiLevelString = core.getInput("android-api-level", {
+            required: false,
+        });
+        const iOSVersionString = core.getInput("ios-version", { required: false });
+        const includeTags = parseTags(core.getInput("include-tags", { required: false }));
+        const excludeTags = parseTags(core.getInput("exclude-tags", { required: false }));
+        const appFilePath = core.getInput("app-file", { required: false });
+        const appBinaryId = core.getInput("app-binary-id", { required: false });
         if (!(appFilePath !== "") !== (appBinaryId !== "")) {
             throw new Error("Either app-file or app-binary-id must be used");
         }
-        const deviceLocale = core.getInput('device-locale', { required: false });
-        const timeoutString = core.getInput('timeout', { required: false });
+        const deviceLocale = core.getInput("device-locale", { required: false });
+        const timeoutString = core.getInput("timeout", { required: false });
         var env = {};
-        env = core.getMultilineInput('env', { required: false })
-            .map(it => {
-            const parts = it.split('=');
+        env = core
+            .getMultilineInput("env", { required: false })
+            .map((it) => {
+            const parts = it.split("=");
             if (parts.length < 2) {
                 throw new Error(`Invalid env parameter: ${it}`);
             }
-            return { key: parts[0], value: parts.slice(1).join('=') };
+            return { key: parts[0], value: parts.slice(1).join("=") };
         })
             .reduce((map, entry) => {
             map[entry.key] = entry.value;
@@ -47305,6 +47360,7 @@ function getParameters() {
             appBinaryId,
             deviceLocale,
             timeout,
+            projectId,
         };
     });
 }

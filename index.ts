@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import ApiClient, {
-  UploadRequest,
+  CloudUploadRequest,
   UploadResponse,
   RobinUploadResponse,
 } from "./ApiClient";
@@ -84,7 +84,7 @@ const run = async () => {
   const client = new ApiClient(apiKey, apiUrl, projectId);
 
   info("Uploading to Maestro Cloud");
-  const request: UploadRequest = {
+  const request: CloudUploadRequest = {
     benchmarkName: name,
     branch: branchName,
     commitSha: commitSha,

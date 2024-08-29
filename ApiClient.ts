@@ -1,4 +1,5 @@
 import fetch, { FetchError, fileFromSync, FormData } from "node-fetch";
+import * as core from "@actions/core";
 
 export enum BenchmarkStatus {
   PENDING = "PENDING",
@@ -9,7 +10,7 @@ export enum BenchmarkStatus {
   WARNING = "WARNING",
 }
 
-export type UploadRequest = {
+export type CloudUploadRequest = {
   benchmarkName?: string;
   repoOwner?: string;
   repoName?: string;
@@ -24,6 +25,13 @@ export type UploadRequest = {
   excludeTags: string[];
   appBinaryId?: string;
   deviceLocale?: string;
+};
+
+type MaestroUploadRequest = Omit<
+  CloudUploadRequest,
+  "benchmarkName" | "repoOwner" | "repoName" | "agent"
+> & {
+  projectId: string;
 };
 
 // irrelevant data has been factored out from this model
@@ -74,28 +82,40 @@ export default class ApiClient {
   ) {}
 
   async uploadRequest(
-    request: UploadRequest,
+    request: CloudUploadRequest,
     appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null
   ): Promise<UploadResponse | RobinUploadResponse> {
     const formData = new FormData();
 
-    formData.set("request", JSON.stringify(request));
     if (appFile) {
       formData.set("app_binary", fileFromSync(appFile));
     }
-
     if (workspaceZip) {
       formData.set("workspace", fileFromSync(workspaceZip));
     }
-
     if (mappingFile) {
       formData.set("mapping", fileFromSync(mappingFile));
     }
 
     // If Project Id exist - Hit robin
     if (!!this.projectId) {
+      const updatedRequest: MaestroUploadRequest = {
+        branch: request.branch,
+        commitSha: request.commitSha,
+        pullRequestId: request.pullRequestId,
+        env: request.env,
+        androidApiLevel: request.androidApiLevel,
+        iOSVersion: request.iOSVersion,
+        includeTags: request.includeTags,
+        excludeTags: request.excludeTags,
+        appBinaryId: request.appBinaryId || undefined,
+        deviceLocale: request.deviceLocale || undefined,
+        projectId: this.projectId,
+      };
+      formData.set("request", JSON.stringify(updatedRequest));
+
       const res = await fetch(`${this.apiUrl}/runMaestroTest`, {
         method: "POST",
         headers: {
@@ -113,6 +133,7 @@ export default class ApiClient {
     }
     // Else if no project id - Hit Cloud
     else {
+      formData.set("request", JSON.stringify(request));
       const res = await fetch(`${this.apiUrl}/v2/upload`, {
         method: "POST",
         headers: {
@@ -133,7 +154,7 @@ export default class ApiClient {
   async getUploadStatus(uploadId: string): Promise<UploadStatusResponse> {
     // If Project Id exist - Hit robin
     if (!!this.projectId) {
-      const res = await fetch(`${this.apiUrl}/v2/upload/${uploadId}`, {
+      const res = await fetch(`${this.apiUrl}/upload/${uploadId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,

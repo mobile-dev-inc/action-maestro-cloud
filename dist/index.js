@@ -46572,7 +46572,6 @@ class ApiClient {
     uploadRequest(request, appFile, workspaceZip, mappingFile) {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
-            formData.set("request", JSON.stringify(request));
             if (appFile) {
                 formData.set("app_binary", (0, node_fetch_1.fileFromSync)(appFile));
             }
@@ -46584,6 +46583,20 @@ class ApiClient {
             }
             // If Project Id exist - Hit robin
             if (!!this.projectId) {
+                const updatedRequest = {
+                    branch: request.branch,
+                    commitSha: request.commitSha,
+                    pullRequestId: request.pullRequestId,
+                    env: request.env,
+                    androidApiLevel: request.androidApiLevel,
+                    iOSVersion: request.iOSVersion,
+                    includeTags: request.includeTags,
+                    excludeTags: request.excludeTags,
+                    appBinaryId: request.appBinaryId || undefined,
+                    deviceLocale: request.deviceLocale || undefined,
+                    projectId: this.projectId,
+                };
+                formData.set("request", JSON.stringify(updatedRequest));
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
                     method: "POST",
                     headers: {
@@ -46599,6 +46612,7 @@ class ApiClient {
             }
             // Else if no project id - Hit Cloud
             else {
+                formData.set("request", JSON.stringify(request));
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
                     method: "POST",
                     headers: {
@@ -46618,7 +46632,7 @@ class ApiClient {
         return __awaiter(this, void 0, void 0, function* () {
             // If Project Id exist - Hit robin
             if (!!this.projectId) {
-                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}`, {
+                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/upload/${uploadId}`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${this.apiKey}`,

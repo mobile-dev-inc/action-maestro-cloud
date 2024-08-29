@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import ApiClient, {
   CloudUploadRequest,
   UploadResponse,
+  RobinUploadRequest,
   RobinUploadResponse,
 } from "./ApiClient";
 import { validateAppFile } from "./app_file";
@@ -83,57 +84,81 @@ const run = async () => {
 
   const client = new ApiClient(apiKey, apiUrl, projectId);
 
-  info("Uploading to Maestro Cloud");
-  const request: CloudUploadRequest = {
-    benchmarkName: name,
-    branch: branchName,
-    commitSha: commitSha,
-    repoOwner: repoOwner,
-    repoName: repoName,
-    pullRequestId: pullRequestId,
-    env: env,
-    agent: "github",
-    androidApiLevel: androidApiLevel,
-    iOSVersion: iOSVersion,
-    includeTags: includeTags,
-    excludeTags: excludeTags,
-    appBinaryId: appBinaryId || undefined,
-    deviceLocale: deviceLocale || undefined,
-  };
-
-  const response: UploadResponse | RobinUploadResponse =
-    await client.uploadRequest(
+  if (!!projectId) {
+    /**
+     * If project Exist - Its Robin
+     */
+    info("Uploading to Robin Basic");
+    const request: RobinUploadRequest = {
+      projectId: projectId,
+      repoName: repoName,
+      agent: "github",
+      branch: branchName,
+      commitSha: commitSha,
+      pullRequestId: pullRequestId,
+      env: env,
+      androidApiLevel: androidApiLevel,
+      iOSVersion: iOSVersion,
+      includeTags: includeTags,
+      excludeTags: excludeTags,
+      appBinaryId: appBinaryId || undefined,
+      deviceLocale: deviceLocale || undefined,
+    };
+    const {
+      uploadId,
+      orgId,
+      appId,
+      appBinaryId: appBinaryIdResponse,
+    }: RobinUploadResponse = await client.robinUploadRequest(
       request,
       appFile && appFile.path,
       workspaceZip,
       mappingFile && (await zipIfFolder(mappingFile))
     );
-
-  // If project Exist - Its Robin
-  if (!!projectId) {
-    const { uploadId, orgId, appId, appBinaryId } =
-      response as RobinUploadResponse;
     const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
     core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
-    core.setOutput("ROBIN_APP_BINARY_ID", response.appBinaryId);
+    core.setOutput("ROBIN_APP_BINARY_ID", appBinaryIdResponse);
     !async &&
-      new StatusPoller(client, response.uploadId, consoleUrl).startPolling(
-        timeout
-      );
-  }
-  // If project Exist - Its Cloud
-  else {
-    const { uploadId, teamId, appBinaryId } = response as UploadResponse;
-    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryId}`;
+      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout);
+  } else {
+    /**
+     * If project Exist - Its Cloud
+     */
+    info("Uploading to Maestro Cloud");
+    const request: CloudUploadRequest = {
+      benchmarkName: name,
+      repoOwner: repoOwner,
+      repoName: repoName,
+      agent: "github",
+      branch: branchName,
+      commitSha: commitSha,
+      pullRequestId: pullRequestId,
+      env: env,
+      androidApiLevel: androidApiLevel,
+      iOSVersion: iOSVersion,
+      includeTags: includeTags,
+      excludeTags: excludeTags,
+      appBinaryId: appBinaryId || undefined,
+      deviceLocale: deviceLocale || undefined,
+    };
+    const {
+      uploadId,
+      teamId,
+      appBinaryId: appBinaryIdResponse,
+    }: UploadResponse = await client.cloudUploadRequest(
+      request,
+      appFile && appFile.path,
+      workspaceZip,
+      mappingFile && (await zipIfFolder(mappingFile))
+    );
+    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`;
     info(
       `Visit the web console for more details about the upload: ${consoleUrl}\n`
     );
     core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
-    core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", response.appBinaryId);
+    core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", appBinaryId);
     !async &&
-      new StatusPoller(client, response.uploadId, consoleUrl).startPolling(
-        timeout
-      );
+      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout);
   }
 };
 

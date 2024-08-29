@@ -1,5 +1,4 @@
-import fetch, { FetchError, fileFromSync, FormData } from "node-fetch";
-import * as core from "@actions/core";
+import fetch, { fileFromSync, FormData } from "node-fetch";
 
 export enum BenchmarkStatus {
   PENDING = "PENDING",
@@ -27,11 +26,20 @@ export type CloudUploadRequest = {
   deviceLocale?: string;
 };
 
-type MaestroUploadRequest = Omit<
-  CloudUploadRequest,
-  "benchmarkName" | "repoOwner" | "repoName" | "agent"
-> & {
+export type RobinUploadRequest = {
   projectId: string;
+  repoName?: string;
+  pullRequestId?: string;
+  branch?: string;
+  commitSha?: string;
+  env?: { [key: string]: string };
+  agent: string;
+  androidApiLevel?: number;
+  iOSVersion?: number;
+  includeTags: string[];
+  excludeTags: string[];
+  appBinaryId?: string;
+  deviceLocale?: string;
 };
 
 // irrelevant data has been factored out from this model
@@ -81,12 +89,43 @@ export default class ApiClient {
     private projectId?: string
   ) {}
 
-  async uploadRequest(
+  async cloudUploadRequest(
     request: CloudUploadRequest,
     appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null
-  ): Promise<UploadResponse | RobinUploadResponse> {
+  ): Promise<UploadResponse> {
+    const formData = new FormData();
+    if (appFile) {
+      formData.set("app_binary", fileFromSync(appFile));
+    }
+    if (workspaceZip) {
+      formData.set("workspace", fileFromSync(workspaceZip));
+    }
+    if (mappingFile) {
+      formData.set("mapping", fileFromSync(mappingFile));
+    }
+    formData.set("request", JSON.stringify(request));
+    const res = await fetch(`${this.apiUrl}/v2/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+    }
+    return (await res.json()) as UploadResponse;
+  }
+
+  async robinUploadRequest(
+    request: RobinUploadRequest,
+    appFile: string | null,
+    workspaceZip: string | null,
+    mappingFile: string | null
+  ): Promise<RobinUploadResponse> {
     const formData = new FormData();
 
     if (appFile) {
@@ -98,57 +137,20 @@ export default class ApiClient {
     if (mappingFile) {
       formData.set("mapping", fileFromSync(mappingFile));
     }
+    formData.set("request", JSON.stringify(request));
 
-    // If Project Id exist - Hit robin
-    if (!!this.projectId) {
-      const updatedRequest: MaestroUploadRequest = {
-        branch: request.branch,
-        commitSha: request.commitSha,
-        pullRequestId: request.pullRequestId,
-        env: request.env,
-        androidApiLevel: request.androidApiLevel,
-        iOSVersion: request.iOSVersion,
-        includeTags: request.includeTags,
-        excludeTags: request.excludeTags,
-        appBinaryId: request.appBinaryId || undefined,
-        deviceLocale: request.deviceLocale || undefined,
-        projectId: this.projectId,
-      };
-      formData.set("request", JSON.stringify(updatedRequest));
-
-      const res = await fetch(`${this.apiUrl}/runMaestroTest`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: formData,
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(
-          `Request to ${res.url} failed (${res.status}): ${body}`
-        );
-      }
-      return (await res.json()) as RobinUploadResponse;
+    const res = await fetch(`${this.apiUrl}/runMaestroTest`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
     }
-    // Else if no project id - Hit Cloud
-    else {
-      formData.set("request", JSON.stringify(request));
-      const res = await fetch(`${this.apiUrl}/v2/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: formData,
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(
-          `Request to ${res.url} failed (${res.status}): ${body}`
-        );
-      }
-      return (await res.json()) as UploadResponse;
-    }
+    return (await res.json()) as RobinUploadResponse;
   }
 
   async getUploadStatus(uploadId: string): Promise<UploadStatusResponse> {

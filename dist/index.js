@@ -46569,7 +46569,7 @@ class ApiClient {
         this.apiUrl = apiUrl;
         this.projectId = projectId;
     }
-    uploadRequest(request, appFile, workspaceZip, mappingFile) {
+    cloudUploadRequest(request, appFile, workspaceZip, mappingFile) {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
             if (appFile) {
@@ -46581,51 +46581,46 @@ class ApiClient {
             if (mappingFile) {
                 formData.set("mapping", (0, node_fetch_1.fileFromSync)(mappingFile));
             }
-            // If Project Id exist - Hit robin
-            if (!!this.projectId) {
-                const updatedRequest = {
-                    branch: request.branch,
-                    commitSha: request.commitSha,
-                    pullRequestId: request.pullRequestId,
-                    env: request.env,
-                    androidApiLevel: request.androidApiLevel,
-                    iOSVersion: request.iOSVersion,
-                    includeTags: request.includeTags,
-                    excludeTags: request.excludeTags,
-                    appBinaryId: request.appBinaryId || undefined,
-                    deviceLocale: request.deviceLocale || undefined,
-                    projectId: this.projectId,
-                };
-                formData.set("request", JSON.stringify(updatedRequest));
-                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${this.apiKey}`,
-                    },
-                    body: formData,
-                });
-                if (!res.ok) {
-                    const body = yield res.text();
-                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
-                }
-                return (yield res.json());
+            formData.set("request", JSON.stringify(request));
+            const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${this.apiKey}`,
+                },
+                body: formData,
+            });
+            if (!res.ok) {
+                const body = yield res.text();
+                throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
             }
-            // Else if no project id - Hit Cloud
-            else {
-                formData.set("request", JSON.stringify(request));
-                const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${this.apiKey}`,
-                    },
-                    body: formData,
-                });
-                if (!res.ok) {
-                    const body = yield res.text();
-                    throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
-                }
-                return (yield res.json());
+            return (yield res.json());
+        });
+    }
+    robinUploadRequest(request, appFile, workspaceZip, mappingFile) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const formData = new node_fetch_1.FormData();
+            if (appFile) {
+                formData.set("app_binary", (0, node_fetch_1.fileFromSync)(appFile));
             }
+            if (workspaceZip) {
+                formData.set("workspace", (0, node_fetch_1.fileFromSync)(workspaceZip));
+            }
+            if (mappingFile) {
+                formData.set("mapping", (0, node_fetch_1.fileFromSync)(mappingFile));
+            }
+            formData.set("request", JSON.stringify(request));
+            const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${this.apiKey}`,
+                },
+                body: formData,
+            });
+            if (!res.ok) {
+                const body = yield res.text();
+                throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
+            }
+            return (yield res.json());
         });
     }
     getUploadStatus(uploadId) {
@@ -47110,42 +47105,61 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     const workspaceZip = yield createWorkspaceZip(workspaceFolder);
     const client = new ApiClient_1.default(apiKey, apiUrl, projectId);
-    (0, log_1.info)("Uploading to Maestro Cloud");
-    const request = {
-        benchmarkName: name,
-        branch: branchName,
-        commitSha: commitSha,
-        repoOwner: repoOwner,
-        repoName: repoName,
-        pullRequestId: pullRequestId,
-        env: env,
-        agent: "github",
-        androidApiLevel: androidApiLevel,
-        iOSVersion: iOSVersion,
-        includeTags: includeTags,
-        excludeTags: excludeTags,
-        appBinaryId: appBinaryId || undefined,
-        deviceLocale: deviceLocale || undefined,
-    };
-    const response = yield client.uploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
-    // If project Exist - Its Robin
     if (!!projectId) {
-        const { uploadId, orgId, appId, appBinaryId } = response;
+        /**
+         * If project Exist - Its Robin
+         */
+        (0, log_1.info)("Uploading to Robin Basic");
+        const request = {
+            projectId: projectId,
+            repoName: repoName,
+            agent: "github",
+            branch: branchName,
+            commitSha: commitSha,
+            pullRequestId: pullRequestId,
+            env: env,
+            androidApiLevel: androidApiLevel,
+            iOSVersion: iOSVersion,
+            includeTags: includeTags,
+            excludeTags: excludeTags,
+            appBinaryId: appBinaryId || undefined,
+            deviceLocale: deviceLocale || undefined,
+        };
+        const { uploadId, orgId, appId, appBinaryId: appBinaryIdResponse, } = yield client.robinUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
         const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
         core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
-        core.setOutput("ROBIN_APP_BINARY_ID", response.appBinaryId);
+        core.setOutput("ROBIN_APP_BINARY_ID", appBinaryIdResponse);
         !async &&
-            new StatusPoller_1.default(client, response.uploadId, consoleUrl).startPolling(timeout);
+            new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
     }
-    // If project Exist - Its Cloud
     else {
-        const { uploadId, teamId, appBinaryId } = response;
-        const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryId}`;
+        /**
+         * If project Exist - Its Cloud
+         */
+        (0, log_1.info)("Uploading to Maestro Cloud");
+        const request = {
+            benchmarkName: name,
+            repoOwner: repoOwner,
+            repoName: repoName,
+            agent: "github",
+            branch: branchName,
+            commitSha: commitSha,
+            pullRequestId: pullRequestId,
+            env: env,
+            androidApiLevel: androidApiLevel,
+            iOSVersion: iOSVersion,
+            includeTags: includeTags,
+            excludeTags: excludeTags,
+            appBinaryId: appBinaryId || undefined,
+            deviceLocale: deviceLocale || undefined,
+        };
+        const { uploadId, teamId, appBinaryId: appBinaryIdResponse, } = yield client.cloudUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
+        const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`;
         (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
         core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
-        core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", response.appBinaryId);
+        core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", appBinaryId);
         !async &&
-            new StatusPoller_1.default(client, response.uploadId, consoleUrl).startPolling(timeout);
+            new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
     }
 });
 run().catch((e) => {

@@ -1,51 +1,51 @@
-import * as core from "@actions/core";
+import * as core from '@actions/core'
 import ApiClient, {
   CloudUploadRequest,
   UploadResponse,
   RobinUploadRequest,
   RobinUploadResponse,
-} from "./ApiClient";
-import { validateAppFile } from "./app_file";
-import { zipFolder, zipIfFolder } from "./archive_utils";
-import { getParameters } from "./params";
-import { existsSync, readdirSync } from "fs";
-import StatusPoller from "./StatusPoller";
-import { info } from "./log";
+} from './ApiClient'
+import { validateAppFile } from './app_file'
+import { zipFolder, zipIfFolder } from './archive_utils'
+import { getParameters } from './params'
+import { existsSync, readdirSync } from 'fs'
+import StatusPoller from './StatusPoller'
+import { info } from './log'
 
-const knownAppTypes = ["ANDROID_APK", "IOS_BUNDLE"];
+const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE']
 
 const listFilesInDirectory = () => {
-  const files = readdirSync(".", { withFileTypes: true });
+  const files = readdirSync('.', { withFileTypes: true })
 
-  console.log("Directory contents:");
+  console.log('Directory contents:')
   for (const f of files) {
-    console.log(f.isDirectory() ? `${f.name}/` : f.name);
+    console.log(f.isDirectory() ? `${f.name}/` : f.name)
   }
-};
+}
 
 const createWorkspaceZip = async (
   workspaceFolder: string | null
 ): Promise<string | null> => {
-  let resolvedWorkspaceFolder = workspaceFolder;
+  let resolvedWorkspaceFolder = workspaceFolder
   if (resolvedWorkspaceFolder === null || workspaceFolder?.length === 0) {
-    if (existsSync(".maestro")) {
-      resolvedWorkspaceFolder = ".maestro";
-      info("Packaging .maestro folder");
-    } else if (existsSync(".mobiledev")) {
-      resolvedWorkspaceFolder = ".mobiledev";
-      info("Packaging .mobiledev folder");
+    if (existsSync('.maestro')) {
+      resolvedWorkspaceFolder = '.maestro'
+      info('Packaging .maestro folder')
+    } else if (existsSync('.mobiledev')) {
+      resolvedWorkspaceFolder = '.mobiledev'
+      info('Packaging .mobiledev folder')
     } else {
-      listFilesInDirectory();
-      throw new Error("Default workspace directory does not exist: .maestro/");
+      listFilesInDirectory()
+      throw new Error('Default workspace directory does not exist: .maestro/')
     }
   } else if (!existsSync(resolvedWorkspaceFolder)) {
     throw new Error(
       `Workspace directory does not exist: ${resolvedWorkspaceFolder}`
-    );
+    )
   }
-  await zipFolder(resolvedWorkspaceFolder, "workspace.zip");
-  return "workspace.zip";
-};
+  await zipFolder(resolvedWorkspaceFolder, 'workspace.zip')
+  return 'workspace.zip'
+}
 
 const run = async () => {
   const {
@@ -70,29 +70,29 @@ const run = async () => {
     deviceLocale,
     timeout,
     projectId,
-  } = await getParameters();
+  } = await getParameters()
 
-  let appFile = null;
-  if (appFilePath !== "") {
-    appFile = await validateAppFile(await zipIfFolder(appFilePath));
+  let appFile = null
+  if (appFilePath !== '') {
+    appFile = await validateAppFile(await zipIfFolder(appFilePath))
     if (!knownAppTypes.includes(appFile.type)) {
-      throw new Error(`Unsupported app file type: ${appFile.type}`);
+      throw new Error(`Unsupported app file type: ${appFile.type}`)
     }
   }
 
-  const workspaceZip = await createWorkspaceZip(workspaceFolder);
+  const workspaceZip = await createWorkspaceZip(workspaceFolder)
 
-  const client = new ApiClient(apiKey, apiUrl, projectId);
+  const client = new ApiClient(apiKey, apiUrl, projectId)
 
   if (!!projectId) {
     /**
      * If project Exist - Its Robin
      */
-    info("Uploading to Robin Basic");
+    info('Uploading to Robin Basic')
     const request: RobinUploadRequest = {
       projectId: projectId,
       repoName: repoName,
-      agent: "github",
+      agent: 'github',
       branch: branchName,
       commitSha: commitSha,
       pullRequestId: pullRequestId,
@@ -103,7 +103,7 @@ const run = async () => {
       excludeTags: excludeTags,
       appBinaryId: appBinaryId || undefined,
       deviceLocale: deviceLocale || undefined,
-    };
+    }
     const {
       uploadId,
       orgId,
@@ -114,22 +114,22 @@ const run = async () => {
       appFile && appFile.path,
       workspaceZip,
       mappingFile && (await zipIfFolder(mappingFile))
-    );
-    const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
-    core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
-    core.setOutput("ROBIN_APP_BINARY_ID", appBinaryIdResponse);
+    )
+    const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
+    core.setOutput('ROBIN_CONSOLE_URL', consoleUrl)
+    core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse)
     !async &&
-      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout);
+      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
   } else {
     /**
      * If project Exist - Its Cloud
      */
-    info("Uploading to Maestro Cloud");
+    info('Uploading to Maestro Cloud')
     const request: CloudUploadRequest = {
       benchmarkName: name,
       repoOwner: repoOwner,
       repoName: repoName,
-      agent: "github",
+      agent: 'github',
       branch: branchName,
       commitSha: commitSha,
       pullRequestId: pullRequestId,
@@ -140,7 +140,7 @@ const run = async () => {
       excludeTags: excludeTags,
       appBinaryId: appBinaryId || undefined,
       deviceLocale: deviceLocale || undefined,
-    };
+    }
     const {
       uploadId,
       teamId,
@@ -150,18 +150,18 @@ const run = async () => {
       appFile && appFile.path,
       workspaceZip,
       mappingFile && (await zipIfFolder(mappingFile))
-    );
-    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`;
+    )
+    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`
     info(
       `Visit the web console for more details about the upload: ${consoleUrl}\n`
-    );
-    core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
-    core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", appBinaryId);
+    )
+    core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
+    core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryId)
     !async &&
-      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout);
+      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
   }
-};
+}
 
 run().catch((e) => {
-  core.setFailed(`Error running Maestro Cloud Upload Action: ${e.message}`);
-});
+  core.setFailed(`Error running Maestro Cloud Upload Action: ${e.message}`)
+})

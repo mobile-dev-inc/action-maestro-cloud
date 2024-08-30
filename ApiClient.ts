@@ -28,6 +28,7 @@ export type CloudUploadRequest = {
 
 export type RobinUploadRequest = {
   projectId: string
+  repoOwner?: string
   repoName?: string
   pullRequestId?: string
   branch?: string

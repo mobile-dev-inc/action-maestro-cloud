@@ -91,6 +91,7 @@ const run = async () => {
     info('Uploading to Robin Basic')
     const request: RobinUploadRequest = {
       projectId: projectId,
+      repoOwner: repoOwner,
       repoName: repoName,
       agent: 'github',
       branch: branchName,

@@ -46573,17 +46573,17 @@ class ApiClient {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
             if (appFile) {
-                formData.set("app_binary", (0, node_fetch_1.fileFromSync)(appFile));
+                formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
             }
             if (workspaceZip) {
-                formData.set("workspace", (0, node_fetch_1.fileFromSync)(workspaceZip));
+                formData.set('workspace', (0, node_fetch_1.fileFromSync)(workspaceZip));
             }
             if (mappingFile) {
-                formData.set("mapping", (0, node_fetch_1.fileFromSync)(mappingFile));
+                formData.set('mapping', (0, node_fetch_1.fileFromSync)(mappingFile));
             }
-            formData.set("request", JSON.stringify(request));
+            formData.set('request', JSON.stringify(request));
             const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
-                method: "POST",
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
                 },
@@ -46600,17 +46600,17 @@ class ApiClient {
         return __awaiter(this, void 0, void 0, function* () {
             const formData = new node_fetch_1.FormData();
             if (appFile) {
-                formData.set("app_binary", (0, node_fetch_1.fileFromSync)(appFile));
+                formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
             }
             if (workspaceZip) {
-                formData.set("workspace", (0, node_fetch_1.fileFromSync)(workspaceZip));
+                formData.set('workspace', (0, node_fetch_1.fileFromSync)(workspaceZip));
             }
             if (mappingFile) {
-                formData.set("mapping", (0, node_fetch_1.fileFromSync)(mappingFile));
+                formData.set('mapping', (0, node_fetch_1.fileFromSync)(mappingFile));
             }
-            formData.set("request", JSON.stringify(request));
+            formData.set('request', JSON.stringify(request));
             const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
-                method: "POST",
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
                 },
@@ -46628,7 +46628,7 @@ class ApiClient {
             // If Project Id exist - Hit robin
             if (!!this.projectId) {
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/upload/${uploadId}`, {
-                    method: "GET",
+                    method: 'GET',
                     headers: {
                         Authorization: `Bearer ${this.apiKey}`,
                     },
@@ -46646,7 +46646,7 @@ class ApiClient {
             // Else if no project id - Hit Cloud
             else {
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
-                    method: "GET",
+                    method: 'GET',
                     headers: {
                         Authorization: `Bearer ${this.apiKey}`,
                     },
@@ -47064,10 +47064,10 @@ const params_1 = __nccwpck_require__(805);
 const fs_1 = __nccwpck_require__(7147);
 const StatusPoller_1 = __importDefault(__nccwpck_require__(2575));
 const log_1 = __nccwpck_require__(3826);
-const knownAppTypes = ["ANDROID_APK", "IOS_BUNDLE"];
+const knownAppTypes = ['ANDROID_APK', 'IOS_BUNDLE'];
 const listFilesInDirectory = () => {
-    const files = (0, fs_1.readdirSync)(".", { withFileTypes: true });
-    console.log("Directory contents:");
+    const files = (0, fs_1.readdirSync)('.', { withFileTypes: true });
+    console.log('Directory contents:');
     for (const f of files) {
         console.log(f.isDirectory() ? `${f.name}/` : f.name);
     }
@@ -47075,29 +47075,29 @@ const listFilesInDirectory = () => {
 const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0, function* () {
     let resolvedWorkspaceFolder = workspaceFolder;
     if (resolvedWorkspaceFolder === null || (workspaceFolder === null || workspaceFolder === void 0 ? void 0 : workspaceFolder.length) === 0) {
-        if ((0, fs_1.existsSync)(".maestro")) {
-            resolvedWorkspaceFolder = ".maestro";
-            (0, log_1.info)("Packaging .maestro folder");
+        if ((0, fs_1.existsSync)('.maestro')) {
+            resolvedWorkspaceFolder = '.maestro';
+            (0, log_1.info)('Packaging .maestro folder');
         }
-        else if ((0, fs_1.existsSync)(".mobiledev")) {
-            resolvedWorkspaceFolder = ".mobiledev";
-            (0, log_1.info)("Packaging .mobiledev folder");
+        else if ((0, fs_1.existsSync)('.mobiledev')) {
+            resolvedWorkspaceFolder = '.mobiledev';
+            (0, log_1.info)('Packaging .mobiledev folder');
         }
         else {
             listFilesInDirectory();
-            throw new Error("Default workspace directory does not exist: .maestro/");
+            throw new Error('Default workspace directory does not exist: .maestro/');
         }
     }
     else if (!(0, fs_1.existsSync)(resolvedWorkspaceFolder)) {
         throw new Error(`Workspace directory does not exist: ${resolvedWorkspaceFolder}`);
     }
-    yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, "workspace.zip");
-    return "workspace.zip";
+    yield (0, archive_utils_1.zipFolder)(resolvedWorkspaceFolder, 'workspace.zip');
+    return 'workspace.zip';
 });
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, timeout, projectId, } = yield (0, params_1.getParameters)();
     let appFile = null;
-    if (appFilePath !== "") {
+    if (appFilePath !== '') {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
         if (!knownAppTypes.includes(appFile.type)) {
             throw new Error(`Unsupported app file type: ${appFile.type}`);
@@ -47109,11 +47109,12 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         /**
          * If project Exist - Its Robin
          */
-        (0, log_1.info)("Uploading to Robin Basic");
+        (0, log_1.info)('Uploading to Robin Basic');
         const request = {
             projectId: projectId,
+            repoOwner: repoOwner,
             repoName: repoName,
-            agent: "github",
+            agent: 'github',
             branch: branchName,
             commitSha: commitSha,
             pullRequestId: pullRequestId,
@@ -47127,8 +47128,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         };
         const { uploadId, orgId, appId, appBinaryId: appBinaryIdResponse, } = yield client.robinUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
         const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
-        core.setOutput("ROBIN_CONSOLE_URL", consoleUrl);
-        core.setOutput("ROBIN_APP_BINARY_ID", appBinaryIdResponse);
+        core.setOutput('ROBIN_CONSOLE_URL', consoleUrl);
+        core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse);
         !async &&
             new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
     }
@@ -47136,12 +47137,12 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         /**
          * If project Exist - Its Cloud
          */
-        (0, log_1.info)("Uploading to Maestro Cloud");
+        (0, log_1.info)('Uploading to Maestro Cloud');
         const request = {
             benchmarkName: name,
             repoOwner: repoOwner,
             repoName: repoName,
-            agent: "github",
+            agent: 'github',
             branch: branchName,
             commitSha: commitSha,
             pullRequestId: pullRequestId,
@@ -47156,8 +47157,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const { uploadId, teamId, appBinaryId: appBinaryIdResponse, } = yield client.cloudUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
         const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`;
         (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
-        core.setOutput("MAESTRO_CLOUD_CONSOLE_URL", consoleUrl);
-        core.setOutput("MAESTRO_CLOUD_APP_BINARY_ID", appBinaryId);
+        core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
+        core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryId);
         !async &&
             new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
     }
@@ -47291,7 +47292,7 @@ function getInferredName() {
     const pullRequestTitle = getPullRequestTitle();
     if (pullRequestTitle)
         return pullRequestTitle;
-    if (github.context.eventName === "push") {
+    if (github.context.eventName === 'push') {
         const pushPayload = github.context.payload;
         const commitMessage = (_a = pushPayload.head_commit) === null || _a === void 0 ? void 0 : _a.message;
         if (commitMessage)
@@ -47309,51 +47310,51 @@ function getTimeout(timeout) {
     return timeout ? +timeout : undefined;
 }
 function parseTags(tags) {
-    if (tags === undefined || tags === "")
+    if (tags === undefined || tags === '')
         return [];
-    if (tags.includes(",")) {
-        const arrayTags = tags.split(",").map((it) => it.trim());
+    if (tags.includes(',')) {
+        const arrayTags = tags.split(',').map((it) => it.trim());
         if (!Array.isArray(arrayTags))
-            throw new Error("tags must be an Array.");
+            throw new Error('tags must be an Array.');
         return arrayTags;
     }
     return [tags];
 }
 function getParameters() {
     return __awaiter(this, void 0, void 0, function* () {
-        const projectId = core.getInput("project-id", { required: false }) || undefined;
-        const apiUrl = core.getInput("api-url", { required: false }) ||
+        const projectId = core.getInput('project-id', { required: false }) || undefined;
+        const apiUrl = core.getInput('api-url', { required: false }) ||
             (projectId
                 ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
-                : "https://api.mobile.dev");
-        const name = core.getInput("name", { required: false }) || getInferredName();
-        const apiKey = core.getInput("api-key", { required: true });
-        const mappingFileInput = core.getInput("mapping-file", { required: false });
-        const workspaceFolder = core.getInput("workspace", { required: false });
+                : 'https://api.mobile.dev');
+        const name = core.getInput('name', { required: false }) || getInferredName();
+        const apiKey = core.getInput('api-key', { required: true });
+        const mappingFileInput = core.getInput('mapping-file', { required: false });
+        const workspaceFolder = core.getInput('workspace', { required: false });
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
-        const async = core.getInput("async", { required: false }) === "true";
-        const androidApiLevelString = core.getInput("android-api-level", {
+        const async = core.getInput('async', { required: false }) === 'true';
+        const androidApiLevelString = core.getInput('android-api-level', {
             required: false,
         });
-        const iOSVersionString = core.getInput("ios-version", { required: false });
-        const includeTags = parseTags(core.getInput("include-tags", { required: false }));
-        const excludeTags = parseTags(core.getInput("exclude-tags", { required: false }));
-        const appFilePath = core.getInput("app-file", { required: false });
-        const appBinaryId = core.getInput("app-binary-id", { required: false });
-        if (!(appFilePath !== "") !== (appBinaryId !== "")) {
-            throw new Error("Either app-file or app-binary-id must be used");
+        const iOSVersionString = core.getInput('ios-version', { required: false });
+        const includeTags = parseTags(core.getInput('include-tags', { required: false }));
+        const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
+        const appFilePath = core.getInput('app-file', { required: false });
+        const appBinaryId = core.getInput('app-binary-id', { required: false });
+        if (!(appFilePath !== '') !== (appBinaryId !== '')) {
+            throw new Error('Either app-file or app-binary-id must be used');
         }
-        const deviceLocale = core.getInput("device-locale", { required: false });
-        const timeoutString = core.getInput("timeout", { required: false });
+        const deviceLocale = core.getInput('device-locale', { required: false });
+        const timeoutString = core.getInput('timeout', { required: false });
         var env = {};
         env = core
-            .getMultilineInput("env", { required: false })
+            .getMultilineInput('env', { required: false })
             .map((it) => {
-            const parts = it.split("=");
+            const parts = it.split('=');
             if (parts.length < 2) {
                 throw new Error(`Invalid env parameter: ${it}`);
             }
-            return { key: parts[0], value: parts.slice(1).join("=") };
+            return { key: parts[0], value: parts.slice(1).join('=') };
         })
             .reduce((map, entry) => {
             map[entry.key] = entry.value;

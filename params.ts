@@ -1,44 +1,51 @@
-import * as github from '@actions/github';
-import * as core from '@actions/core';
-import { AppFile, validateMappingFile } from './app_file';
+import * as github from '@actions/github'
+import * as core from '@actions/core'
+import { AppFile, validateMappingFile } from './app_file'
 import { PushEvent } from '@octokit/webhooks-definitions/schema'
 
 export type Params = {
-  apiKey: string,
-  apiUrl: string,
-  name: string,
-  appFilePath: string,
-  mappingFile: string | null,
-  workspaceFolder: string | null,
+  projectId?: string
+  apiKey: string
+  apiUrl: string
+  name: string
+  appFilePath: string
+  mappingFile: string | null
+  workspaceFolder: string | null
   branchName: string
   commitSha?: string
   repoName: string
   repoOwner: string
-  pullRequestId?: string,
-  env?: { [key: string]: string },
-  async?: boolean,
-  androidApiLevel?: number,
-  iOSVersion?: number,
-  includeTags: string[],
-  excludeTags: string[],
-  appBinaryId: string,
-  deviceLocale?: string,
-  timeout?: number,
+  pullRequestId?: string
+  env?: { [key: string]: string }
+  async?: boolean
+  androidApiLevel?: number
+  iOSVersion?: number
+  includeTags: string[]
+  excludeTags: string[]
+  appBinaryId: string
+  deviceLocale?: string
+  timeout?: number
 }
 
 function getBranchName(): string {
   const pullRequest = github.context.payload.pull_request
   if (pullRequest) {
-    const branchName = pullRequest?.head?.ref;
+    const branchName = pullRequest?.head?.ref
     if (!branchName) {
-      throw new Error(`Unable find pull request ref: ${JSON.stringify(pullRequest, undefined, 2)}`)
+      throw new Error(
+        `Unable find pull request ref: ${JSON.stringify(
+          pullRequest,
+          undefined,
+          2
+        )}`
+      )
     }
     return branchName
   }
 
   const regex = /refs\/(heads|tags)\/(.*)/
   const ref = github.context.ref
-  let result = regex.exec(ref);
+  let result = regex.exec(ref)
   if (!result || result.length < 3) {
     throw new Error(`Failed to parse GitHub ref: ${ref}`)
   }
@@ -71,11 +78,11 @@ function getPullRequestTitle(): string | undefined {
 
 function getInferredName(): string {
   const pullRequestTitle = getPullRequestTitle()
-  if (pullRequestTitle) return pullRequestTitle;
+  if (pullRequestTitle) return pullRequestTitle
 
   if (github.context.eventName === 'push') {
     const pushPayload = github.context.payload as PushEvent
-    const commitMessage = pushPayload.head_commit?.message;
+    const commitMessage = pushPayload.head_commit?.message
     if (commitMessage) return commitMessage
   }
 
@@ -98,11 +105,9 @@ function parseTags(tags?: string): string[] {
   if (tags === undefined || tags === '') return []
 
   if (tags.includes(',')) {
-    const arrayTags = tags.split(',')
-      .map(it => it.trim())
+    const arrayTags = tags.split(',').map((it) => it.trim())
 
-    if (!Array.isArray(arrayTags))
-      throw new Error("tags must be an Array.")
+    if (!Array.isArray(arrayTags)) throw new Error('tags must be an Array.')
 
     return arrayTags
   }
@@ -111,30 +116,43 @@ function parseTags(tags?: string): string[] {
 }
 
 export async function getParameters(): Promise<Params> {
-  const apiUrl = core.getInput('api-url', { required: false }) || 'https://api.mobile.dev'
+  const projectId =
+    core.getInput('project-id', { required: false }) || undefined
+  const apiUrl =
+    core.getInput('api-url', { required: false }) ||
+    (projectId
+      ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
+      : 'https://api.mobile.dev')
   const name = core.getInput('name', { required: false }) || getInferredName()
   const apiKey = core.getInput('api-key', { required: true })
   const mappingFileInput = core.getInput('mapping-file', { required: false })
   const workspaceFolder = core.getInput('workspace', { required: false })
   const mappingFile = mappingFileInput && validateMappingFile(mappingFileInput)
   const async = core.getInput('async', { required: false }) === 'true'
-  const androidApiLevelString = core.getInput('android-api-level', { required: false })
+  const androidApiLevelString = core.getInput('android-api-level', {
+    required: false,
+  })
   const iOSVersionString = core.getInput('ios-version', { required: false })
-  const includeTags = parseTags(core.getInput('include-tags', { required: false }))
-  const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }))
+  const includeTags = parseTags(
+    core.getInput('include-tags', { required: false })
+  )
+  const excludeTags = parseTags(
+    core.getInput('exclude-tags', { required: false })
+  )
 
   const appFilePath = core.getInput('app-file', { required: false })
   const appBinaryId = core.getInput('app-binary-id', { required: false })
-  if (!(appFilePath !== "") !== (appBinaryId !== "")) {
-    throw new Error("Either app-file or app-binary-id must be used")
+  if (!(appFilePath !== '') !== (appBinaryId !== '')) {
+    throw new Error('Either app-file or app-binary-id must be used')
   }
 
   const deviceLocale = core.getInput('device-locale', { required: false })
   const timeoutString = core.getInput('timeout', { required: false })
 
   var env: { [key: string]: string } = {}
-  env = core.getMultilineInput('env', { required: false })
-    .map(it => {
+  env = core
+    .getMultilineInput('env', { required: false })
+    .map((it) => {
       const parts = it.split('=')
 
       if (parts.length < 2) {
@@ -178,5 +196,6 @@ export async function getParameters(): Promise<Params> {
     appBinaryId,
     deviceLocale,
     timeout,
+    projectId,
   }
 }

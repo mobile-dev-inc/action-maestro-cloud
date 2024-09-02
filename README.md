@@ -7,7 +7,7 @@ Run your Flows on [Maestro Cloud](https://cloud.mobile.dev).
 Add the following to your workflow. Note that you can use the `v1` tag if you want to keep using the latest version of the action, which will automatically resolve to all `v1.minor.patch` versions as they get published.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <path_to_your_app_file>
@@ -45,7 +45,7 @@ jobs:
 # Android
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/debug/app-debug.apk
@@ -58,7 +58,7 @@ jobs:
 Include the Proguard mapping file to deobfuscate Android performance traces:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app/build/outputs/apk/release/app-release.apk
@@ -68,7 +68,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 # iOS
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <app_name>.app
@@ -80,7 +80,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 ### .dSYM file
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <app_name>.app
@@ -94,7 +94,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 By default, the action is looking for a `.maestro` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -112,7 +112,7 @@ A name will automatically be provided according to the following order:
 If you want to override this behaviour and specify your own name, you can do so by setting the `name` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -124,7 +124,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 If you don't want the action to wait until the Upload has been completed as is the default behaviour, set the `async` argument to `true`:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -134,7 +134,7 @@ If you don't want the action to wait until the Upload has been completed as is t
 Alternatively, you might want to still wait for the action but would like to configure the timeout period, set `timeout` argument to a number of minutes:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -146,7 +146,7 @@ Alternatively, you might want to still wait for the action but would like to con
 If you want to pass environment variables along with your upload, add a multiline `env` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -162,7 +162,7 @@ You can use Maestro [Tags](https://maestro.mobile.dev/cli/tags) to filter which 
 You can either pass a single value, or comma-separated (`,`) values.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -177,7 +177,7 @@ You can specify what Android API level to use when running in Maestro Cloud usin
 The default API level is 30. [Refer to Maestro Cloud docs](https://cloud.mobile.dev/reference/device-configuration) for available Android emulator API levels.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.apk
@@ -191,7 +191,7 @@ You can specify what **major** iOS Version to use when running in Maestro Cloud 
 The default iOS version is 15. [Refer to Maestro Cloud docs](https://cloud.mobile.dev/reference/device-configuration) for available iOS simulator versions.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -204,12 +204,12 @@ You can use an already uploaded App binary in Maestro Cloud using the `app-binar
 
 ```yaml
       - id: upload
-        uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+        uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           app-file: app.zip
 
-      - uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+      - uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
@@ -220,7 +220,7 @@ You can use an already uploaded App binary in Maestro Cloud using the `app-binar
 To switch the device locale on a remote device from a default one (en_US) `device-locale` parameter should be used. The value is a combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code, i.e. "de_DE" for Germany.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: app.zip
@@ -241,7 +241,7 @@ In order to access these variables you can use the following approach:
 
 ```yaml
 - id: upload
-  uses: mobile-dev-inc/action-maestro-cloud@v1.8.1
+  uses: mobile-dev-inc/action-maestro-cloud@v1.9.1
   with:
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     app-file: <your_app_file>

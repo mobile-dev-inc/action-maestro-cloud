@@ -27,6 +27,7 @@ export type CloudUploadRequest = {
 }
 
 export type RobinUploadRequest = {
+  benchmarkName?: string
   projectId: string
   repoOwner?: string
   repoName?: string

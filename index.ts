@@ -88,8 +88,9 @@ const run = async () => {
     /**
      * If project Exist - Its Robin
      */
-    info('Uploading to Robin Basic')
+    info('Uploading to Robin')
     const request: RobinUploadRequest = {
+      benchmarkName: name,
       projectId: projectId,
       repoOwner: repoOwner,
       repoName: repoName,

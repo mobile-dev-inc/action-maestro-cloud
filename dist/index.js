@@ -47109,8 +47109,9 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         /**
          * If project Exist - Its Robin
          */
-        (0, log_1.info)('Uploading to Robin Basic');
+        (0, log_1.info)('Uploading to Robin');
         const request = {
+            benchmarkName: name,
             projectId: projectId,
             repoOwner: repoOwner,
             repoName: repoName,

@@ -7,6 +7,7 @@ export enum BenchmarkStatus {
   ERROR = 'ERROR',
   CANCELED = 'CANCELED',
   WARNING = 'WARNING',
+  STOPPED = 'STOPPED'
 }
 
 export type CloudUploadRequest = {

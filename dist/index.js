@@ -46548,6 +46548,7 @@ var BenchmarkStatus;
     BenchmarkStatus["ERROR"] = "ERROR";
     BenchmarkStatus["CANCELED"] = "CANCELED";
     BenchmarkStatus["WARNING"] = "WARNING";
+    BenchmarkStatus["STOPPED"] = "STOPPED";
 })(BenchmarkStatus = exports.BenchmarkStatus || (exports.BenchmarkStatus = {}));
 class UploadStatusError {
     constructor(status, text) {

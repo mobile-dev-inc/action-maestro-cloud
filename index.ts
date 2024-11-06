@@ -117,7 +117,7 @@ const run = async () => {
       workspaceZip,
       mappingFile && (await zipIfFolder(mappingFile))
     )
-    const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
+    const consoleUrl = `https://app.robintest.com/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
     core.setOutput('ROBIN_CONSOLE_URL', consoleUrl)
     core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse)
     !async &&

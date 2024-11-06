@@ -47129,7 +47129,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             deviceLocale: deviceLocale || undefined,
         };
         const { uploadId, orgId, appId, appBinaryId: appBinaryIdResponse, } = yield client.robinUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
-        const consoleUrl = `https://copilot.mobile.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
+        const consoleUrl = `https://app.robintest.com/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
         core.setOutput('ROBIN_CONSOLE_URL', consoleUrl);
         core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse);
         !async &&
@@ -47327,7 +47327,7 @@ function getParameters() {
         const projectId = core.getInput('project-id', { required: false }) || undefined;
         const apiUrl = core.getInput('api-url', { required: false }) ||
             (projectId
-                ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
+                ? `https://api.app.robintest.com/v2/project/${projectId}`
                 : 'https://api.mobile.dev');
         const name = core.getInput('name', { required: false }) || getInferredName();
         const apiKey = core.getInput('api-key', { required: true });

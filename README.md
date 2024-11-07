@@ -2,7 +2,7 @@
 
 Run your Flows on [Maestro Cloud](https://cloud.mobile.dev).
 
-# Using the action
+## Using the action
 
 Add the following to your workflow. Note that you can use the `v1` tag if you want to keep using the latest version of the action, which will automatically resolve to all `v1.minor.patch` versions as they get published.
 
@@ -13,7 +13,7 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
     app-file: <path_to_your_app_file>
 ```
 
-# Triggers
+## Triggers
 
 Trigger this action on (1) pushes to your main branch and (2) pull requests opened against your main branch:
 
@@ -42,7 +42,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }} # Checkout PR HEAD
 ```
 
-# Android
+## Android
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
@@ -65,7 +65,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
     mapping-file: app/build/outputs/mapping/release/mapping.txt
 ```
 
-# iOS
+## iOS
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
@@ -89,7 +89,7 @@ Include the Proguard mapping file to deobfuscate Android performance traces:
 
 `mapping-file` should point to generated .dSYM file (unique per build). more info [here](https://developer.apple.com/documentation/xcode/building-your-app-to-include-debugging-information).
 
-# Custom workspace location
+## Custom workspace location
 
 By default, the action is looking for a `.maestro` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
 
@@ -101,7 +101,7 @@ By default, the action is looking for a `.maestro` folder with Maestro flows in 
     workspace: myFlows/
 ```
 
-# Custom name
+## Custom name
 
 A name will automatically be provided according to the following order:
 
@@ -119,7 +119,7 @@ If you want to override this behaviour and specify your own name, you can do so 
     name: My Upload
 ```
 
-# Run in async mode
+## Run in async mode
 
 If you don't want the action to wait until the Upload has been completed as is the default behaviour, set the `async` argument to `true`:
 
@@ -141,7 +141,7 @@ Alternatively, you might want to still wait for the action but would like to con
     timeout: 90 # Wait for 90 minutes
 ```
 
-# Adding environment variables
+## Adding environment variables
 
 If you want to pass environment variables along with your upload, add a multiline `env` argument:
 
@@ -155,7 +155,7 @@ If you want to pass environment variables along with your upload, add a multilin
       PASSWORD=<password>
 ```
 
-# Using tags
+## Using tags
 
 You can use Maestro [Tags](https://maestro.mobile.dev/cli/tags) to filter which Flows to send to Maestro Cloud:
 
@@ -170,7 +170,7 @@ You can either pass a single value, or comma-separated (`,`) values.
     exclude-tags: excludeTag
 ```
 
-# Specifying Android API Level
+## Specifying Android API Level
 
 You can specify what Android API level to use when running in Maestro Cloud using the `android-api-level` parameter.
 
@@ -184,7 +184,7 @@ The default API level is 30. [Refer to Maestro Cloud docs](https://cloud.mobile.
     android-api-level: 29
 ```
 
-# Specifying iOS version
+## Specifying iOS version
 
 You can specify what **major** iOS Version to use when running in Maestro Cloud using the `ios-version` parameter.
 
@@ -198,7 +198,7 @@ The default iOS version is 15. [Refer to Maestro Cloud docs](https://cloud.mobil
     ios-version: 16
 ```
 
-# Using an already uploaded App
+## Using an already uploaded App
 
 You can use an already uploaded App binary in Maestro Cloud using the `app-binary-id` parameter.
 
@@ -215,7 +215,7 @@ You can use an already uploaded App binary in Maestro Cloud using the `app-binar
           app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
 ```
 
-# Configuring the locale for the device where the flows will be executed
+## Configuring the locale for the device where the flows will be executed
 
 To switch the device locale on a remote device from a default one (en_US) `device-locale` parameter should be used. The value is a combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code, i.e. "de_DE" for Germany.
 
@@ -228,7 +228,7 @@ To switch the device locale on a remote device from a default one (en_US) `devic
 
 ```
 
-# Accessing output
+## Accessing output
 
 The following output variables are set by the action:
 
@@ -258,12 +258,13 @@ In order to access these variables you can use the following approach:
     echo "App Binary ID: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
 ```
 
-## Output types 
+### Output types
 
 - `MAESTRO_CLOUD_UPLOAD_STATUS`
 
   Any of the following values:
-  ```
+
+  ```plaintext
   PENDING
   RUNNING
   SUCCESS
@@ -275,7 +276,7 @@ In order to access these variables you can use the following approach:
 - `MAESTRO_CLOUD_FLOW_RESULTS`
 
    An array of objects with at least `name`, `status`, and `errors` fields.
+
    ```json
    [{"name":"my-first-flow","status":"SUCCESS","errors":[]},{"name":"my-second-flow","status":"SUCCESS","errors":[]},{"name":"my-cancelled-flow","status":"CANCELED","errors":[],"cancellationReason":"INFRA_ERROR"}]
    ```
-

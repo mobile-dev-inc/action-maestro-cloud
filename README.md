@@ -232,10 +232,12 @@ To switch the device locale on a remote device from a default one (en_US) `devic
 
 The following output variables are set by the action:
 
-- `MAESTRO_CLOUD_CONSOLE_URL` - link to the Maestro Cloud console
+- `MAESTRO_CLOUD_CONSOLE_URL` - link to the Maestro Cloud console (if using Maestro Cloud)
+- `ROBIN_CONSOLE_URL` - link to the Robin console (if using Robin)
 - `MAESTRO_CLOUD_UPLOAD_STATUS` - status of the Upload (not available in `async` mode)
 - `MAESTRO_CLOUD_FLOW_RESULTS` - list of Flows and their results (not available in `async` mode)
-- `MAESTRO_CLOUD_APP_BINARY_ID` - id of the binary uploaded
+- `MAESTRO_CLOUD_APP_BINARY_ID` - id of the binary uploaded (if using Maestro Cloud)
+- `ROBIN_APP_BINARY_ID` - id of the binary uploaded (if using Robin)
 
 In order to access these variables you can use the following approach:
 

@@ -10,7 +10,7 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2' # replace this with your actual project id
     app-file: <path_to_your_app_file>
 ```
 
@@ -74,7 +74,7 @@ For more information on triggering workflows, check out [GitHub's documentation]
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -88,7 +88,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app/build/outputs/apk/release/app-release.apk
     mapping-file: app/build/outputs/mapping/release/mapping.txt
 ```
@@ -99,7 +99,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: <app_name>.app
     mapping-file: <app_name>.app.dSYM
 ```
@@ -112,7 +112,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: <app_name>.app
     mapping-file: <app_name>.app.dSYM
 ```
@@ -127,7 +127,7 @@ By default, the action is looking for a `.maestro` folder with Maestro flows in 
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     workspace: myFlows/
 ```
@@ -146,7 +146,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     name: My Upload
 ```
@@ -159,7 +159,7 @@ If you don't want the action to wait until the Upload has been completed as is t
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     async: true
 ```
@@ -170,7 +170,7 @@ Alternatively, you might want to still wait for the action but would like to con
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     timeout: 90 # Wait for 90 minutes
 ```
@@ -183,7 +183,7 @@ If you want to pass environment variables along with your upload, add a multilin
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     env: |
       USERNAME=<username>
@@ -200,7 +200,7 @@ You can either pass a single value, or comma-separated (`,`) values.
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     include-tags: dev, pull-request
     exclude-tags: excludeTag
@@ -216,7 +216,7 @@ On Robin, the default API level is 33 (Android 13). [Refer to Robin docs](https:
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.apk
     android-api-level: 29
 ```
@@ -231,7 +231,7 @@ On Robin, the default iOS version is 16. [Refer to Robin docs](https://docs.robi
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     ios-version: 16
 ```
@@ -245,13 +245,13 @@ You can use an already uploaded binary in Robin using the `app-binary-id` parame
         uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
         with:
           api-key: ${{ secrets.ROBIN_API_KEY }}
-          project-id: 'proj_01abc3def456ghij78klmnopq9'
+          project-id: 'proj_01example0example1example2'
           app-file: app.zip
 
       - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
         with:
           api-key: ${{ secrets.ROBIN_API_KEY }}
-          project-id: 'proj_01abc3def456ghij78klmnopq9'
+          project-id: 'proj_01example0example1example2'
           app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
 ```
 
@@ -263,7 +263,7 @@ To switch the device locale on a remote device from a default one (en_US) `devic
 - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: app.zip
     device-locale: de_DE
 
@@ -287,7 +287,7 @@ In order to access these variables you can use the following approach:
   uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
-    project-id: 'proj_01abc3def456ghij78klmnopq9'
+    project-id: 'proj_01example0example1example2'
     app-file: <your_app_file>
     # ... any other parameters
 

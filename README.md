@@ -7,7 +7,7 @@ Run your Flows on [Robin](https://www.robintest.com/) or [Maestro Cloud](https:/
 Add the following to your workflow. Note that you can use the `v1` tag if you want to keep using the latest version of the action, which will automatically resolve to all `v1.minor.patch` versions as they get published.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2' # replace this with your actual project id
@@ -71,7 +71,7 @@ For more information on triggering workflows, check out [GitHub's documentation]
 ## Android
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -85,7 +85,7 @@ For more information on triggering workflows, check out [GitHub's documentation]
 Include the ProGuard mapping file to deobfuscate Android performance traces:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -96,7 +96,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 ## iOS
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -109,7 +109,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 ### .dSYM file
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -124,7 +124,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
 By default, the action is looking for a `.maestro` folder with Maestro flows in the root directory of the project. If you would like to customize this behaviour, you can override it with a `workspace` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -143,7 +143,7 @@ A name will automatically be provided according to the following order:
 If you want to override this behaviour and specify your own name, you can do so by setting the `name` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -156,7 +156,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 If you don't want the action to wait until the Upload has been completed as is the default behaviour, set the `async` argument to `true`:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -167,7 +167,7 @@ If you don't want the action to wait until the Upload has been completed as is t
 Alternatively, you might want to still wait for the action but would like to configure the timeout period, set `timeout` argument to a number of minutes:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -180,7 +180,7 @@ Alternatively, you might want to still wait for the action but would like to con
 If you want to pass environment variables along with your upload, add a multiline `env` argument:
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -197,7 +197,7 @@ You can use Maestro [Tags](https://maestro.mobile.dev/cli/tags) to filter which 
 You can either pass a single value, or comma-separated (`,`) values.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -213,7 +213,7 @@ You can specify which Android API level to use when running using the `android-a
 On Robin, the default API level is 33 (Android 13). [Refer to Robin docs](https://docs.robintest.com/maestro/reference/device-configuration/configuring-os-version) for available Android emulator API levels. On Maestro Cloud, the default API level is 30 (Android 11) - docs [here](https://cloud.mobile.dev/reference/device-configuration).
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -228,7 +228,7 @@ You can specify which **major** iOS Version to use when running in Robin using t
 On Robin, the default iOS version is 16. [Refer to Robin docs](https://docs.robintest.com/maestro/reference/device-configuration/configuring-os-version) for available iOS simulator versions. On Maestro Cloud, the default iOS version is 15 - docs [here](https://cloud.mobile.dev/reference/device-configuration).
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -242,13 +242,13 @@ You can use an already uploaded binary in Robin using the `app-binary-id` parame
 
 ```yaml
       - id: upload
-        uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+        uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
         with:
           api-key: ${{ secrets.ROBIN_API_KEY }}
           project-id: 'proj_01example0example1example2'
           app-file: app.zip
 
-      - uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+      - uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
         with:
           api-key: ${{ secrets.ROBIN_API_KEY }}
           project-id: 'proj_01example0example1example2'
@@ -260,7 +260,7 @@ You can use an already uploaded binary in Robin using the `app-binary-id` parame
 To switch the device locale on a remote device from a default one (en_US) `device-locale` parameter should be used. The value is a combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code, i.e. "de_DE" for Germany.
 
 ```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'
@@ -284,7 +284,7 @@ In order to access these variables you can use the following approach:
 
 ```yaml
 - id: upload
-  uses: mobile-dev-inc/action-maestro-cloud@v1.9.4
+  uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
   with:
     api-key: ${{ secrets.ROBIN_API_KEY }}
     project-id: 'proj_01example0example1example2'

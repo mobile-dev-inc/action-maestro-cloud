@@ -47327,7 +47327,7 @@ function getParameters() {
         const projectId = core.getInput('project-id', { required: false }) || undefined;
         const apiUrl = core.getInput('api-url', { required: false }) ||
             (projectId
-                ? `https://api.app.robintest.com/v2/project/${projectId}`
+                ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
                 : 'https://api.mobile.dev');
         const name = core.getInput('name', { required: false }) || getInferredName();
         const apiKey = core.getInput('api-key', { required: true });

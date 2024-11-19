@@ -2,6 +2,8 @@ import fetch, { fileFromSync, FormData } from 'node-fetch'
 
 export enum BenchmarkStatus {
   PENDING = 'PENDING',
+  PREPARING = 'PREPARING',
+  INSTALLING = 'INSTALLING',
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',

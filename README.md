@@ -308,6 +308,8 @@ In order to access these variables you can use the following approach:
 
   ```plaintext
   PENDING
+  PREPARING
+  INSTALLING
   RUNNING
   SUCCESS
   ERROR

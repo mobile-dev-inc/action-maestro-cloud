@@ -46555,8 +46555,6 @@ var RunStatus;
 var UploadStatus;
 (function (UploadStatus) {
     UploadStatus["PENDING"] = "PENDING";
-    UploadStatus["PREPARING"] = "PREPARING";
-    UploadStatus["INSTALLING"] = "INSTALLING";
     UploadStatus["RUNNING"] = "RUNNING";
     UploadStatus["SUCCESS"] = "SUCCESS";
     UploadStatus["ERROR"] = "ERROR";

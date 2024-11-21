@@ -1,21 +1,9 @@
 import fetch, { fileFromSync, FormData } from 'node-fetch'
 
 export enum RunStatus {
-
-export enum FlowStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
   INSTALLING = 'INSTALLING',
-  RUNNING = 'RUNNING',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR',
-  CANCELED = 'CANCELED',
-  WARNING = 'WARNING',
-  STOPPED = 'STOPPED'
-}
-
-export enum UploadStatus {
-  PENDING = 'PENDING',
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
@@ -110,7 +98,11 @@ export type UploadStatusResponse = {
 }
 
 export default class ApiClient {
-  constructor(private apiKey: string, private apiUrl: string, private projectId?: string) {}
+  constructor(
+    private apiKey: string,
+    private apiUrl: string,
+    private projectId?: string
+  ) {}
 
   async cloudUploadRequest(
     request: CloudUploadRequest,
@@ -207,7 +199,7 @@ export default class ApiClient {
             Authorization: `Bearer ${this.apiKey}`
           }
         }
-      })
+      )
       if (!res.ok) {
         const body = await res.text()
         throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`)

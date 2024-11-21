@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
-import ApiClient, { BenchmarkStatus, CancellationReason, Flow, UploadStatusError } from "./ApiClient";
-import { canceled, err, info, success, warning } from './log';
+import ApiClient, { RunStatus, UploadStatus, CancellationReason, Flow, UploadStatusError } from './ApiClient'
+import { canceled, err, info, success, warning } from './log'
 
 const WAIT_TIMEOUT_MS = 1000 * 60 * 30 // 30 minutes
 const INTERVAL_MS = 10000 // 10 seconds
-const TERMINAL_STATUSES = new Set([BenchmarkStatus.SUCCESS, BenchmarkStatus.ERROR, BenchmarkStatus.WARNING, BenchmarkStatus.CANCELED])
+const TERMINAL_STATUSES = new Set([RunStatus.SUCCESS, RunStatus.ERROR, RunStatus.WARNING, RunStatus.CANCELED])
 
 const isCompleted = (flow: Flow): boolean => TERMINAL_STATUSES.has(flow.status)
 
@@ -12,48 +12,48 @@ const getCanceledStatusMessage = (reason?: CancellationReason): string => {
   switch (reason) {
     case CancellationReason.BENCHMARK_DEPENDENCY_FAILED:
     case CancellationReason.OVERLAPPING_BENCHMARK:
-      return 'Skipped';
+      return 'Skipped'
 
     case CancellationReason.TIMEOUT:
-      return 'Timeout';
+      return 'Timeout'
 
     case CancellationReason.INFRA_ERROR:
     default:
-      return 'Canceled';
+      return 'Canceled'
   }
 }
 
 const renderError = (errors?: string[]): string => {
-  if (!errors || errors.length === 0) return '';
+  if (!errors || errors.length === 0) return ''
 
-  return ` (${errors[0]})`;
+  return ` (${errors[0]})`
 }
 
 const printFlowResult = (flow: Flow): void => {
-  if (flow.status === BenchmarkStatus.SUCCESS) {
+  if (flow.status === RunStatus.SUCCESS) {
     success(`[Passed] ${flow.name}`)
-  } else if (flow.status === BenchmarkStatus.ERROR) {
+  } else if (flow.status === RunStatus.ERROR) {
     err(`[Failed] ${flow.name}${renderError(flow.errors)}`)
-  } else if (flow.status === BenchmarkStatus.WARNING) {
+  } else if (flow.status === RunStatus.WARNING) {
     warning(`[Warning] ${flow.name}`)
-  } else if (flow.status === BenchmarkStatus.CANCELED) {
+  } else if (flow.status === RunStatus.CANCELED) {
     canceled(`[${getCanceledStatusMessage(flow.cancellationReason)}] ${flow.name}`)
   }
 }
 
-const flowWord = (count: number): string => count === 1 ? 'Flow' : 'Flows'
+const flowWord = (count: number): string => (count === 1 ? 'Flow' : 'Flows')
 
 const getFailedFlowsCountStr = (flows: Flow[]): string => {
-  const failedFlows = flows.filter(flow => flow.status === BenchmarkStatus.ERROR)
+  const failedFlows = flows.filter((flow) => flow.status === RunStatus.ERROR)
   return `${failedFlows.length}/${flows.length} ${flowWord(flows.length)} Failed`
 }
 
-const printUploadResult = (status: BenchmarkStatus, flows: Flow[]) => {
-  if (status === BenchmarkStatus.ERROR) {
+const printUploadResult = (status: UploadStatus, flows: Flow[]) => {
+  if (status === UploadStatus.ERROR) {
     err(getFailedFlowsCountStr(flows))
   } else {
-    const passedFlows = flows.filter(flow => flow.status === BenchmarkStatus.SUCCESS || flow.status === BenchmarkStatus.WARNING)
-    const canceledFlows = flows.filter(flow => flow.status === BenchmarkStatus.CANCELED)
+    const passedFlows = flows.filter((flow) => flow.status === RunStatus.SUCCESS || flow.status === RunStatus.WARNING)
+    const canceledFlows = flows.filter((flow) => flow.status === RunStatus.CANCELED)
 
     if (passedFlows.length > 0) {
       success(`${passedFlows.length}/${flows.length} ${flowWord(flows.length)} Passed`)
@@ -72,11 +72,7 @@ export default class StatusPoller {
   completedFlows: { [flowName: string]: string } = {}
   stopped: Boolean = false
 
-  constructor(
-    private client: ApiClient,
-    private uploadId: string,
-    private consoleUrl: string,
-  ) { }
+  constructor(private client: ApiClient, private uploadId: string, private consoleUrl: string) {}
 
   markFailed(msg: string) {
     core.setFailed(msg)
@@ -89,10 +85,7 @@ export default class StatusPoller {
     this.markFailed(msg)
   }
 
-  async poll(
-    sleep: number,
-    prevErrorCount: number = 0
-  ) {
+  async poll(sleep: number, prevErrorCount: number = 0) {
     if (this.stopped) {
       return
     }
@@ -118,7 +111,7 @@ export default class StatusPoller {
         core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status)
         core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows)
 
-        if (status === BenchmarkStatus.ERROR) {
+        if (status === UploadStatus.ERROR) {
           const resultStr = getFailedFlowsCountStr(flows)
           console.log('')
           this.markFailed(resultStr)
@@ -148,10 +141,15 @@ export default class StatusPoller {
   }
 
   registerTimeout(timeoutInMinutes?: number) {
-    this.timeout = setTimeout(() => {
-      warning(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`)
-      this.stopped = true
-    }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS)
+    this.timeout = setTimeout(
+      () => {
+        warning(
+          `Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`
+        )
+        this.stopped = true
+      },
+      timeoutInMinutes ? timeoutInMinutes * 60 * 1000 : WAIT_TIMEOUT_MS
+    )
   }
 
   teardown() {

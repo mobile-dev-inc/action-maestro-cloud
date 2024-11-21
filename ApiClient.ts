@@ -1,6 +1,6 @@
 import fetch, { fileFromSync, FormData } from 'node-fetch'
 
-export enum FlowStatus {
+export enum RunStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
   INSTALLING = 'INSTALLING',
@@ -14,8 +14,6 @@ export enum FlowStatus {
 
 export enum UploadStatus {
   PENDING = 'PENDING',
-  PREPARING = 'PREPARING',
-  INSTALLING = 'INSTALLING',
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
@@ -87,7 +85,7 @@ export enum CancellationReason {
 
 export type Flow = {
   name: string
-  status: FlowStatus
+  status: RunStatus
   errors?: string[]
   cancellationReason?: CancellationReason
 }

@@ -1,6 +1,18 @@
 import fetch, { fileFromSync, FormData } from 'node-fetch'
 
-export enum BenchmarkStatus {
+export enum FlowStatus {
+  PENDING = 'PENDING',
+  PREPARING = 'PREPARING',
+  INSTALLING = 'INSTALLING',
+  RUNNING = 'RUNNING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+  CANCELED = 'CANCELED',
+  WARNING = 'WARNING',
+  STOPPED = 'STOPPED'
+}
+
+export enum UploadStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
   INSTALLING = 'INSTALLING',
@@ -70,19 +82,19 @@ export enum CancellationReason {
   BENCHMARK_DEPENDENCY_FAILED = 'BENCHMARK_DEPENDENCY_FAILED',
   INFRA_ERROR = 'INFRA_ERROR',
   OVERLAPPING_BENCHMARK = 'OVERLAPPING_BENCHMARK',
-  TIMEOUT = 'TIMEOUT',
+  TIMEOUT = 'TIMEOUT'
 }
 
 export type Flow = {
   name: string
-  status: BenchmarkStatus
+  status: FlowStatus
   errors?: string[]
   cancellationReason?: CancellationReason
 }
 
 export type UploadStatusResponse = {
   uploadId: string
-  status: BenchmarkStatus
+  status: UploadStatus
   completed: boolean
   flows: Flow[]
 }
@@ -114,9 +126,9 @@ export default class ApiClient {
     const res = await fetch(`${this.apiUrl}/v2/upload`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`
       },
-      body: formData,
+      body: formData
     })
     if (!res.ok) {
       const body = await res.text()
@@ -147,9 +159,9 @@ export default class ApiClient {
     const res = await fetch(`${this.apiUrl}/runMaestroTest`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`
       },
-      body: formData,
+      body: formData
     })
     if (!res.ok) {
       const body = await res.text()
@@ -164,8 +176,8 @@ export default class ApiClient {
       const res = await fetch(`${this.apiUrl}/upload/${uploadId}`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-        },
+          Authorization: `Bearer ${this.apiKey}`
+        }
       })
       if (!res.ok) {
         const body = await res.text()
@@ -186,8 +198,8 @@ export default class ApiClient {
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-          },
+            Authorization: `Bearer ${this.apiKey}`
+          }
         }
       )
       if (!res.ok) {

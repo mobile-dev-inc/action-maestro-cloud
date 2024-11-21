@@ -1,9 +1,10 @@
 {
   "singleQuote": true,
-  "semi": true,
+  "semi": false,
   "useTabs": false,
+  "trailingComma": "none",
   "tabWidth": 2,
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
-  "printWidth": 120
+  "printWidth": 80
 }

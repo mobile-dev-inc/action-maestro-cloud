@@ -14,6 +14,8 @@ export enum RunStatus {
 
 export enum UploadStatus {
   PENDING = 'PENDING',
+  PREPARING = 'PREPARING',
+  INSTALLING = 'INSTALLING',
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',

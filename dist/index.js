@@ -46538,18 +46538,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CancellationReason = exports.UploadStatusError = exports.BenchmarkStatus = void 0;
+exports.CancellationReason = exports.UploadStatusError = exports.UploadStatus = exports.RunStatus = void 0;
 const node_fetch_1 = __importStar(__nccwpck_require__(4429));
-var BenchmarkStatus;
-(function (BenchmarkStatus) {
-    BenchmarkStatus["PENDING"] = "PENDING";
-    BenchmarkStatus["RUNNING"] = "RUNNING";
-    BenchmarkStatus["SUCCESS"] = "SUCCESS";
-    BenchmarkStatus["ERROR"] = "ERROR";
-    BenchmarkStatus["CANCELED"] = "CANCELED";
-    BenchmarkStatus["WARNING"] = "WARNING";
-    BenchmarkStatus["STOPPED"] = "STOPPED";
-})(BenchmarkStatus = exports.BenchmarkStatus || (exports.BenchmarkStatus = {}));
+var RunStatus;
+(function (RunStatus) {
+    RunStatus["PENDING"] = "PENDING";
+    RunStatus["PREPARING"] = "PREPARING";
+    RunStatus["INSTALLING"] = "INSTALLING";
+    RunStatus["RUNNING"] = "RUNNING";
+    RunStatus["SUCCESS"] = "SUCCESS";
+    RunStatus["ERROR"] = "ERROR";
+    RunStatus["CANCELED"] = "CANCELED";
+    RunStatus["WARNING"] = "WARNING";
+    RunStatus["STOPPED"] = "STOPPED";
+})(RunStatus = exports.RunStatus || (exports.RunStatus = {}));
+var UploadStatus;
+(function (UploadStatus) {
+    UploadStatus["PENDING"] = "PENDING";
+    UploadStatus["PREPARING"] = "PREPARING";
+    UploadStatus["INSTALLING"] = "INSTALLING";
+    UploadStatus["RUNNING"] = "RUNNING";
+    UploadStatus["SUCCESS"] = "SUCCESS";
+    UploadStatus["ERROR"] = "ERROR";
+    UploadStatus["CANCELED"] = "CANCELED";
+    UploadStatus["WARNING"] = "WARNING";
+    UploadStatus["STOPPED"] = "STOPPED";
+})(UploadStatus = exports.UploadStatus || (exports.UploadStatus = {}));
 class UploadStatusError {
     constructor(status, text) {
         this.status = status;
@@ -46586,9 +46600,9 @@ class ApiClient {
             const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${this.apiKey}`,
+                    Authorization: `Bearer ${this.apiKey}`
                 },
-                body: formData,
+                body: formData
             });
             if (!res.ok) {
                 const body = yield res.text();
@@ -46613,9 +46627,9 @@ class ApiClient {
             const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${this.apiKey}`,
+                    Authorization: `Bearer ${this.apiKey}`
                 },
-                body: formData,
+                body: formData
             });
             if (!res.ok) {
                 const body = yield res.text();
@@ -46631,8 +46645,8 @@ class ApiClient {
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/upload/${uploadId}`, {
                     method: 'GET',
                     headers: {
-                        Authorization: `Bearer ${this.apiKey}`,
-                    },
+                        Authorization: `Bearer ${this.apiKey}`
+                    }
                 });
                 if (!res.ok) {
                     const body = yield res.text();
@@ -46649,8 +46663,8 @@ class ApiClient {
                 const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
                     method: 'GET',
                     headers: {
-                        Authorization: `Bearer ${this.apiKey}`,
-                    },
+                        Authorization: `Bearer ${this.apiKey}`
+                    }
                 });
                 if (!res.ok) {
                     const body = yield res.text();
@@ -46713,7 +46727,7 @@ const ApiClient_1 = __nccwpck_require__(9494);
 const log_1 = __nccwpck_require__(3826);
 const WAIT_TIMEOUT_MS = 1000 * 60 * 30; // 30 minutes
 const INTERVAL_MS = 10000; // 10 seconds
-const TERMINAL_STATUSES = new Set([ApiClient_1.BenchmarkStatus.SUCCESS, ApiClient_1.BenchmarkStatus.ERROR, ApiClient_1.BenchmarkStatus.WARNING, ApiClient_1.BenchmarkStatus.CANCELED]);
+const TERMINAL_STATUSES = new Set([ApiClient_1.RunStatus.SUCCESS, ApiClient_1.RunStatus.ERROR, ApiClient_1.RunStatus.WARNING, ApiClient_1.RunStatus.CANCELED]);
 const isCompleted = (flow) => TERMINAL_STATUSES.has(flow.status);
 const getCanceledStatusMessage = (reason) => {
     switch (reason) {
@@ -46733,31 +46747,31 @@ const renderError = (errors) => {
     return ` (${errors[0]})`;
 };
 const printFlowResult = (flow) => {
-    if (flow.status === ApiClient_1.BenchmarkStatus.SUCCESS) {
+    if (flow.status === ApiClient_1.RunStatus.SUCCESS) {
         (0, log_1.success)(`[Passed] ${flow.name}`);
     }
-    else if (flow.status === ApiClient_1.BenchmarkStatus.ERROR) {
+    else if (flow.status === ApiClient_1.RunStatus.ERROR) {
         (0, log_1.err)(`[Failed] ${flow.name}${renderError(flow.errors)}`);
     }
-    else if (flow.status === ApiClient_1.BenchmarkStatus.WARNING) {
+    else if (flow.status === ApiClient_1.RunStatus.WARNING) {
         (0, log_1.warning)(`[Warning] ${flow.name}`);
     }
-    else if (flow.status === ApiClient_1.BenchmarkStatus.CANCELED) {
+    else if (flow.status === ApiClient_1.RunStatus.CANCELED) {
         (0, log_1.canceled)(`[${getCanceledStatusMessage(flow.cancellationReason)}] ${flow.name}`);
     }
 };
-const flowWord = (count) => count === 1 ? 'Flow' : 'Flows';
+const flowWord = (count) => (count === 1 ? 'Flow' : 'Flows');
 const getFailedFlowsCountStr = (flows) => {
-    const failedFlows = flows.filter(flow => flow.status === ApiClient_1.BenchmarkStatus.ERROR);
+    const failedFlows = flows.filter((flow) => flow.status === ApiClient_1.RunStatus.ERROR);
     return `${failedFlows.length}/${flows.length} ${flowWord(flows.length)} Failed`;
 };
 const printUploadResult = (status, flows) => {
-    if (status === ApiClient_1.BenchmarkStatus.ERROR) {
+    if (status === ApiClient_1.UploadStatus.ERROR) {
         (0, log_1.err)(getFailedFlowsCountStr(flows));
     }
     else {
-        const passedFlows = flows.filter(flow => flow.status === ApiClient_1.BenchmarkStatus.SUCCESS || flow.status === ApiClient_1.BenchmarkStatus.WARNING);
-        const canceledFlows = flows.filter(flow => flow.status === ApiClient_1.BenchmarkStatus.CANCELED);
+        const passedFlows = flows.filter((flow) => flow.status === ApiClient_1.RunStatus.SUCCESS || flow.status === ApiClient_1.RunStatus.WARNING);
+        const canceledFlows = flows.filter((flow) => flow.status === ApiClient_1.RunStatus.CANCELED);
         if (passedFlows.length > 0) {
             (0, log_1.success)(`${passedFlows.length}/${flows.length} ${flowWord(flows.length)} Passed`);
             if (canceledFlows.length > 0) {
@@ -46809,7 +46823,7 @@ class StatusPoller {
                     (0, log_1.info)(`${this.consoleUrl}`);
                     core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status);
                     core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows);
-                    if (status === ApiClient_1.BenchmarkStatus.ERROR) {
+                    if (status === ApiClient_1.UploadStatus.ERROR) {
                         const resultStr = getFailedFlowsCountStr(flows);
                         console.log('');
                         this.markFailed(resultStr);
@@ -46848,7 +46862,7 @@ class StatusPoller {
         this.timeout = setTimeout(() => {
             (0, log_1.warning)(`Timed out waiting for Upload to complete. View the Upload in the console for more information: ${this.consoleUrl}`);
             this.stopped = true;
-        }, timeoutInMinutes ? (timeoutInMinutes * 60 * 1000) : WAIT_TIMEOUT_MS);
+        }, timeoutInMinutes ? timeoutInMinutes * 60 * 1000 : WAIT_TIMEOUT_MS);
     }
     teardown() {
         this.timeout && clearTimeout(this.timeout);

@@ -1,9 +1,21 @@
 import fetch, { fileFromSync, FormData } from 'node-fetch'
 
 export enum RunStatus {
+
+export enum FlowStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
   INSTALLING = 'INSTALLING',
+  RUNNING = 'RUNNING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+  CANCELED = 'CANCELED',
+  WARNING = 'WARNING',
+  STOPPED = 'STOPPED'
+}
+
+export enum UploadStatus {
+  PENDING = 'PENDING',
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
@@ -187,10 +199,13 @@ export default class ApiClient {
     }
     // Else if no project id - Hit Cloud
     else {
-      const res = await fetch(`${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`
+      const res = await fetch(
+        `${this.apiUrl}/v2/upload/${uploadId}/status?includeErrors=true`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`
+          }
         }
       })
       if (!res.ok) {

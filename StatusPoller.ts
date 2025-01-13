@@ -111,7 +111,7 @@ export default class StatusPoller {
         core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', status)
         core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', flows)
 
-        if (status === UploadStatus.ERROR) {
+        if (status !== UploadStatus.SUCCESS) {
           const resultStr = getFailedFlowsCountStr(flows)
           console.log('')
           this.markFailed(resultStr)

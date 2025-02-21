@@ -4,24 +4,9 @@ import { canceled, err, info, success, warning } from './log'
 
 const WAIT_TIMEOUT_MS = 1000 * 60 * 30 // 30 minutes
 const INTERVAL_MS = 10000 // 10 seconds
-const TERMINAL_STATUSES = new Set([RunStatus.SUCCESS, RunStatus.ERROR, RunStatus.WARNING, RunStatus.CANCELED])
+const TERMINAL_STATUSES = new Set([RunStatus.SUCCESS, RunStatus.ERROR, RunStatus.STOPPED])
 
 const isCompleted = (flow: Flow): boolean => TERMINAL_STATUSES.has(flow.status)
-
-const getCanceledStatusMessage = (reason?: CancellationReason): string => {
-  switch (reason) {
-    case CancellationReason.BENCHMARK_DEPENDENCY_FAILED:
-    case CancellationReason.OVERLAPPING_BENCHMARK:
-      return 'Skipped'
-
-    case CancellationReason.TIMEOUT:
-      return 'Timeout'
-
-    case CancellationReason.INFRA_ERROR:
-    default:
-      return 'Canceled'
-  }
-}
 
 const renderError = (errors?: string[]): string => {
   if (!errors || errors.length === 0) return ''
@@ -34,10 +19,8 @@ const printFlowResult = (flow: Flow): void => {
     success(`[Passed] ${flow.name}`)
   } else if (flow.status === RunStatus.ERROR) {
     err(`[Failed] ${flow.name}${renderError(flow.errors)}`)
-  } else if (flow.status === RunStatus.WARNING) {
-    warning(`[Warning] ${flow.name}`)
-  } else if (flow.status === RunStatus.CANCELED) {
-    canceled(`[${getCanceledStatusMessage(flow.cancellationReason)}] ${flow.name}`)
+  } else if (flow.status === RunStatus.STOPPED) {
+    warning(`[Stopped] ${flow.name}`)
   }
 }
 
@@ -52,17 +35,16 @@ const printUploadResult = (status: UploadStatus, flows: Flow[]) => {
   if (status === UploadStatus.ERROR) {
     err(getFailedFlowsCountStr(flows))
   } else {
-    const passedFlows = flows.filter((flow) => flow.status === RunStatus.SUCCESS || flow.status === RunStatus.WARNING)
-    const canceledFlows = flows.filter((flow) => flow.status === RunStatus.CANCELED)
+    const passedFlows = flows.filter((flow) => flow.status === RunStatus.SUCCESS)
+    const stoppedFlows = flows.filter((flow) => flow.status === RunStatus.STOPPED)
+    const failedFlows = flows.filter((flow) => flow.status === RunStatus.ERROR)
 
-    if (passedFlows.length > 0) {
-      success(`${passedFlows.length}/${flows.length} ${flowWord(flows.length)} Passed`)
-
-      if (canceledFlows.length > 0) {
-        canceled(`${canceledFlows.length}/${flows.length} ${flowWord(flows.length)} Canceled`)
-      }
-    } else {
-      canceled('Upload Canceled')
+    success(`${passedFlows.length}/${flows.length} ${flowWord(flows.length)} Passed`)
+    if (failedFlows.length > 0) {
+      err(`${failedFlows.length}/${flows.length} ${flowWord(flows.length)} Failed`)
+    }
+    if (stoppedFlows.length > 0) {
+      canceled(`${stoppedFlows.length}/${flows.length} ${flowWord(flows.length)} Stopped`)
     }
   }
 }

@@ -4,7 +4,7 @@ import { AppFile, validateMappingFile } from './app_file'
 import { PushEvent } from '@octokit/webhooks-definitions/schema'
 
 export type Params = {
-  projectId?: string
+  projectId: string
   apiKey: string
   apiUrl: string
   name: string
@@ -117,7 +117,7 @@ function parseTags(tags?: string): string[] {
 
 export async function getParameters(): Promise<Params> {
   const projectId =
-    core.getInput('project-id', { required: false }) || undefined
+    core.getInput('project-id', { required: true })
   const apiUrl =
     core.getInput('api-url', { required: false }) ||
     (projectId

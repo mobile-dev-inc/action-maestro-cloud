@@ -47108,7 +47108,7 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
     return 'workspace.zip';
 });
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, timeout, projectId, } = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, deviceModel, deviceOs, timeout, projectId, } = yield (0, params_1.getParameters)();
     let appFile = null;
     if (appFilePath !== '') {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
@@ -47118,64 +47118,35 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     const workspaceZip = yield createWorkspaceZip(workspaceFolder);
     const client = new ApiClient_1.default(apiKey, apiUrl, projectId);
-    if (!!projectId) {
-        /**
-         * If project Exist - Its Robin
-         */
-        (0, log_1.info)('Uploading to Robin');
-        const request = {
-            benchmarkName: name,
-            projectId: projectId,
-            repoOwner: repoOwner,
-            repoName: repoName,
-            agent: 'github',
-            branch: branchName,
-            commitSha: commitSha,
-            pullRequestId: pullRequestId,
-            env: env,
-            androidApiLevel: androidApiLevel,
-            iOSVersion: iOSVersion,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
-            appBinaryId: appBinaryId || undefined,
-            deviceLocale: deviceLocale || undefined,
-        };
-        const { uploadId, orgId, appId, appBinaryId: appBinaryIdResponse, } = yield client.robinUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
-        const consoleUrl = `https://app.robintest.com/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
-        core.setOutput('ROBIN_CONSOLE_URL', consoleUrl);
-        core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse);
-        !async &&
-            new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
-    }
-    else {
-        /**
-         * If project Exist - Its Cloud
-         */
-        (0, log_1.info)('Uploading to Maestro Cloud');
-        const request = {
-            benchmarkName: name,
-            repoOwner: repoOwner,
-            repoName: repoName,
-            agent: 'github',
-            branch: branchName,
-            commitSha: commitSha,
-            pullRequestId: pullRequestId,
-            env: env,
-            androidApiLevel: androidApiLevel,
-            iOSVersion: iOSVersion,
-            includeTags: includeTags,
-            excludeTags: excludeTags,
-            appBinaryId: appBinaryId || undefined,
-            deviceLocale: deviceLocale || undefined,
-        };
-        const { uploadId, teamId, appBinaryId: appBinaryIdResponse, } = yield client.cloudUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
-        const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`;
-        (0, log_1.info)(`Visit the web console for more details about the upload: ${consoleUrl}\n`);
-        core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
-        core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryId);
-        !async &&
-            new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
-    }
+    /**
+     * If project Exist - Its Robin
+     */
+    (0, log_1.info)('Uploading to Robin');
+    const request = {
+        benchmarkName: name,
+        projectId: projectId,
+        repoOwner: repoOwner,
+        repoName: repoName,
+        agent: 'github',
+        branch: branchName,
+        commitSha: commitSha,
+        pullRequestId: pullRequestId,
+        env: env,
+        androidApiLevel: androidApiLevel,
+        iOSVersion: iOSVersion,
+        includeTags: includeTags,
+        excludeTags: excludeTags,
+        appBinaryId: appBinaryId || undefined,
+        deviceLocale: deviceLocale || undefined,
+        deviceModel: deviceModel || undefined,
+        deviceOs: deviceOs || undefined,
+    };
+    const { uploadId, appId, appBinaryId: appBinaryIdResponse, } = yield client.cloudUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
+    const consoleUrl = `https://app.maestro.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
+    core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
+    core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryIdResponse);
+    !async &&
+        new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
 });
 run().catch((e) => {
     core.setFailed(`Error running Maestro Cloud Upload Action: ${e.message}`);
@@ -47336,11 +47307,9 @@ function parseTags(tags) {
 }
 function getParameters() {
     return __awaiter(this, void 0, void 0, function* () {
-        const projectId = core.getInput('project-id', { required: false }) || undefined;
+        const projectId = core.getInput('project-id', { required: true });
         const apiUrl = core.getInput('api-url', { required: false }) ||
-            (projectId
-                ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
-                : 'https://api.mobile.dev');
+            `https://api.copilot.mobile.dev/v2/project/${projectId}`;
         const name = core.getInput('name', { required: false }) || getInferredName();
         const apiKey = core.getInput('api-key', { required: true });
         const mappingFileInput = core.getInput('mapping-file', { required: false });
@@ -47359,6 +47328,8 @@ function getParameters() {
             throw new Error('Either app-file or app-binary-id must be used');
         }
         const deviceLocale = core.getInput('device-locale', { required: false });
+        const deviceModel = core.getInput('device-model', { required: false });
+        const deviceOs = core.getInput('device-os', { required: false });
         const timeoutString = core.getInput('timeout', { required: false });
         var env = {};
         env = core
@@ -47402,6 +47373,8 @@ function getParameters() {
             excludeTags,
             appBinaryId,
             deviceLocale,
+            deviceModel,
+            deviceOs,
             timeout,
             projectId,
         };

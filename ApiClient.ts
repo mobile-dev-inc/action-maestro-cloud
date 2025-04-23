@@ -82,7 +82,7 @@ export default class ApiClient {
   ) {}
 
   async cloudUploadRequest(
-    request: CloudUploadRequest,
+    request: UploadRequest,
     appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null

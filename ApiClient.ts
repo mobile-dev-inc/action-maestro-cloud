@@ -22,24 +22,7 @@ export enum UploadStatus {
   STOPPED = 'STOPPED'
 }
 
-export type CloudUploadRequest = {
-  benchmarkName?: string
-  repoOwner?: string
-  repoName?: string
-  pullRequestId?: string
-  branch?: string
-  commitSha?: string
-  env?: { [key: string]: string }
-  agent: string
-  androidApiLevel?: number
-  iOSVersion?: number
-  includeTags: string[]
-  excludeTags: string[]
-  appBinaryId?: string
-  deviceLocale?: string
-}
-
-export type RobinUploadRequest = {
+export type UploadRequest = {
   benchmarkName?: string
   projectId: string
   repoOwner?: string
@@ -55,17 +38,11 @@ export type RobinUploadRequest = {
   excludeTags: string[]
   appBinaryId?: string
   deviceLocale?: string
+  deviceModel?: string
+  deviceOs?: string
 }
 
-// irrelevant data has been factored out from this model
 export type UploadResponse = {
-  uploadId: string
-  teamId: string
-  targetId: string
-  appBinaryId: string
-}
-
-export type RobinUploadResponse = {
   uploadId: string
   orgId: string
   appId: string
@@ -136,11 +113,11 @@ export default class ApiClient {
   }
 
   async robinUploadRequest(
-    request: RobinUploadRequest,
+    request: UploadRequest,
     appFile: string | null,
     workspaceZip: string | null,
     mappingFile: string | null
-  ): Promise<RobinUploadResponse> {
+  ): Promise<UploadResponse> {
     const formData = new FormData()
 
     if (appFile) {
@@ -165,7 +142,7 @@ export default class ApiClient {
       const body = await res.text()
       throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`)
     }
-    return (await res.json()) as RobinUploadResponse
+    return (await res.json()) as UploadResponse
   }
 
   async getUploadStatus(uploadId: string): Promise<UploadStatusResponse> {

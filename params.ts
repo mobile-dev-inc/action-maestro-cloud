@@ -4,7 +4,7 @@ import { AppFile, validateMappingFile } from './app_file'
 import { PushEvent } from '@octokit/webhooks-definitions/schema'
 
 export type Params = {
-  projectId?: string
+  projectId: string
   apiKey: string
   apiUrl: string
   name: string
@@ -24,6 +24,8 @@ export type Params = {
   excludeTags: string[]
   appBinaryId: string
   deviceLocale?: string
+  deviceModel?: string
+  deviceOs?: string
   timeout?: number
 }
 
@@ -116,13 +118,10 @@ function parseTags(tags?: string): string[] {
 }
 
 export async function getParameters(): Promise<Params> {
-  const projectId =
-    core.getInput('project-id', { required: false }) || undefined
+  const projectId = core.getInput('project-id', { required: true })
   const apiUrl =
     core.getInput('api-url', { required: false }) ||
-    (projectId
-      ? `https://api.copilot.mobile.dev/v2/project/${projectId}`
-      : 'https://api.mobile.dev')
+    `https://api.copilot.mobile.dev/v2/project/${projectId}`
   const name = core.getInput('name', { required: false }) || getInferredName()
   const apiKey = core.getInput('api-key', { required: true })
   const mappingFileInput = core.getInput('mapping-file', { required: false })
@@ -147,6 +146,8 @@ export async function getParameters(): Promise<Params> {
   }
 
   const deviceLocale = core.getInput('device-locale', { required: false })
+  const deviceModel = core.getInput('device-model', { required: false })
+  const deviceOs = core.getInput('device-os', { required: false })
   const timeoutString = core.getInput('timeout', { required: false })
 
   var env: { [key: string]: string } = {}
@@ -195,6 +196,8 @@ export async function getParameters(): Promise<Params> {
     excludeTags,
     appBinaryId,
     deviceLocale,
+    deviceModel,
+    deviceOs,
     timeout,
     projectId,
   }

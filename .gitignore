@@ -2,3 +2,4 @@ node_modules/
 *.bkp
 .secrets
 .idea
+dist/

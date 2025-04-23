@@ -1,9 +1,7 @@
 import * as core from '@actions/core'
 import ApiClient, {
-  CloudUploadRequest,
+  UploadRequest,
   UploadResponse,
-  RobinUploadRequest,
-  RobinUploadResponse,
 } from './ApiClient'
 import { validateAppFile } from './app_file'
 import { zipFolder, zipIfFolder } from './archive_utils'
@@ -68,6 +66,8 @@ const run = async () => {
     excludeTags,
     appBinaryId,
     deviceLocale,
+    deviceModel,
+    deviceOs,
     timeout,
     projectId,
   } = await getParameters()
@@ -84,84 +84,41 @@ const run = async () => {
 
   const client = new ApiClient(apiKey, apiUrl, projectId)
 
-  if (!!projectId) {
-    /**
-     * If project Exist - Its Robin
-     */
-    info('Uploading to Robin')
-    const request: RobinUploadRequest = {
-      benchmarkName: name,
-      projectId: projectId,
-      repoOwner: repoOwner,
-      repoName: repoName,
-      agent: 'github',
-      branch: branchName,
-      commitSha: commitSha,
-      pullRequestId: pullRequestId,
-      env: env,
-      androidApiLevel: androidApiLevel,
-      iOSVersion: iOSVersion,
-      includeTags: includeTags,
-      excludeTags: excludeTags,
-      appBinaryId: appBinaryId || undefined,
-      deviceLocale: deviceLocale || undefined,
-    }
-    const {
-      uploadId,
-      orgId,
-      appId,
-      appBinaryId: appBinaryIdResponse,
-    }: RobinUploadResponse = await client.robinUploadRequest(
-      request,
-      appFile && appFile.path,
-      workspaceZip,
-      mappingFile && (await zipIfFolder(mappingFile))
-    )
-    const consoleUrl = `https://app.robintest.com/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
-    core.setOutput('ROBIN_CONSOLE_URL', consoleUrl)
-    core.setOutput('ROBIN_APP_BINARY_ID', appBinaryIdResponse)
-    !async &&
-      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
-  } else {
-    /**
-     * If project Exist - Its Cloud
-     */
-    info('Uploading to Maestro Cloud')
-    const request: CloudUploadRequest = {
-      benchmarkName: name,
-      repoOwner: repoOwner,
-      repoName: repoName,
-      agent: 'github',
-      branch: branchName,
-      commitSha: commitSha,
-      pullRequestId: pullRequestId,
-      env: env,
-      androidApiLevel: androidApiLevel,
-      iOSVersion: iOSVersion,
-      includeTags: includeTags,
-      excludeTags: excludeTags,
-      appBinaryId: appBinaryId || undefined,
-      deviceLocale: deviceLocale || undefined,
-    }
-    const {
-      uploadId,
-      teamId,
-      appBinaryId: appBinaryIdResponse,
-    }: UploadResponse = await client.cloudUploadRequest(
-      request,
-      appFile && appFile.path,
-      workspaceZip,
-      mappingFile && (await zipIfFolder(mappingFile))
-    )
-    const consoleUrl = `https://console.mobile.dev/uploads/${uploadId}?teamId=${teamId}&appId=${appBinaryIdResponse}`
-    info(
-      `Visit the web console for more details about the upload: ${consoleUrl}\n`
-    )
-    core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
-    core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryId)
-    !async &&
-      new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
+  info('Uploading to Maestro Cloud')
+  const request: UploadRequest = {
+    benchmarkName: name,
+    projectId: projectId,
+    repoOwner: repoOwner,
+    repoName: repoName,
+    agent: 'github',
+    branch: branchName,
+    commitSha: commitSha,
+    pullRequestId: pullRequestId,
+    env: env,
+    androidApiLevel: androidApiLevel,
+    iOSVersion: iOSVersion,
+    includeTags: includeTags,
+    excludeTags: excludeTags,
+    appBinaryId: appBinaryId || undefined,
+    deviceLocale: deviceLocale || undefined,
+    deviceModel: deviceModel || undefined,
+    deviceOs: deviceOs || undefined,
   }
+  const {
+    uploadId,
+    appId,
+    appBinaryId: appBinaryIdResponse,
+  }: UploadResponse = await client.cloudUploadRequest(
+    request,
+    appFile && appFile.path,
+    workspaceZip,
+    mappingFile && (await zipIfFolder(mappingFile))
+  )
+  const consoleUrl = `https://app.maestro.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
+  core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
+  core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryIdResponse)
+  !async &&
+    new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
 }
 
 run().catch((e) => {

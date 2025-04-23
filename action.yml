@@ -31,11 +31,14 @@ inputs:
   android-api-level:
     description: "Android API level to run your flow against"
     required: false
-  ios-version:
-    description: "iOS version to run your flow against"
-    required: false
   device-locale:
     description: "Device locale to run your flow against"
+    required: false
+  device-model:
+    description: "Device model to run your flow against"
+    required: false
+  device-os:
+    description: "Device OS to run your flow against"
     required: false
   include-tags:
     description: "List of tags that will remove flows that does not have the provided tags"
@@ -47,8 +50,8 @@ inputs:
     description: "Minutes to timeout while waiting for results"
     required: false
   project-id:
-    description: "Robin project ID"
-    required: false
+    description: "Maestro Cloud project ID"
+    required: true
 runs:
   using: "node20"
   main: "dist/index.js"

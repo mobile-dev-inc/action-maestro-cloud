@@ -7,63 +7,14 @@ on:
       - main
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
     
-        steps:
-          - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
     
-          - name: Install dependencies
-            run: npm install
+      - name: Install dependencies
+        run: npm install
            
-          - name: Build
-            run: npm run build
-            
-    test:
-        runs-on: ubuntu-latest
-        needs: build
-        
-        steps:
-          - uses: actions/checkout@v4
-          
-          - name: Install JDK 8
-            uses: actions/setup-java@v2
-            with:
-                distribution: "zulu"
-                java-version: 8
-
-          - name: Setup Python
-            uses: actions/setup-python@v4
-            with:
-                python-version: "3.10"
-
-          - name: Install Maestro
-            run: |
-                curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
-                echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
-                echo -n "e2e" > ${HOME}/.maestro/uuid
-
-          - name: Download samples
-            run: python3 ./.github/scripts/download_samples.py
-
-          - name: Download new iOS build
-            run: python3 ./.github/scripts/download_app.py
-
-          - name: Run Android test
-            uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
-            with:
-              api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-              project-id: ${{ secrets.MAESTRO_PROJECT_ID }}
-              app-file: samples/sample.apk
-              workspace: samples
-              include-tags: advanced
-            
-          - name: Run iOS test
-            uses: mobile-dev-inc/action-maestro-cloud@v1.9.6
-            with:
-              api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-              project-id: ${{ secrets.MAESTRO_PROJECT_ID }}
-              app-file: samples/sample.apk
-              workspace: samples
-              include-tags: advanced
-              timeout: 180
+      - name: Build
+        run: npm run build

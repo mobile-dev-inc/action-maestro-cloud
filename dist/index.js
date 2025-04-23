@@ -46595,33 +46595,6 @@ class ApiClient {
                 formData.set('mapping', (0, node_fetch_1.fileFromSync)(mappingFile));
             }
             formData.set('request', JSON.stringify(request));
-            const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/v2/upload`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${this.apiKey}`
-                },
-                body: formData
-            });
-            if (!res.ok) {
-                const body = yield res.text();
-                throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`);
-            }
-            return (yield res.json());
-        });
-    }
-    robinUploadRequest(request, appFile, workspaceZip, mappingFile) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const formData = new node_fetch_1.FormData();
-            if (appFile) {
-                formData.set('app_binary', (0, node_fetch_1.fileFromSync)(appFile));
-            }
-            if (workspaceZip) {
-                formData.set('workspace', (0, node_fetch_1.fileFromSync)(workspaceZip));
-            }
-            if (mappingFile) {
-                formData.set('mapping', (0, node_fetch_1.fileFromSync)(mappingFile));
-            }
-            formData.set('request', JSON.stringify(request));
             const res = yield (0, node_fetch_1.default)(`${this.apiUrl}/runMaestroTest`, {
                 method: 'POST',
                 headers: {

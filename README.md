@@ -312,6 +312,7 @@ In order to access these variables you can use the following approach:
   ERROR
   CANCELED
   WARNING
+  STOPPED
   ```
 
 - `MAESTRO_CLOUD_FLOW_RESULTS`

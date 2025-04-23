@@ -88,37 +88,6 @@ export default class ApiClient {
     mappingFile: string | null
   ): Promise<UploadResponse> {
     const formData = new FormData()
-    if (appFile) {
-      formData.set('app_binary', fileFromSync(appFile))
-    }
-    if (workspaceZip) {
-      formData.set('workspace', fileFromSync(workspaceZip))
-    }
-    if (mappingFile) {
-      formData.set('mapping', fileFromSync(mappingFile))
-    }
-    formData.set('request', JSON.stringify(request))
-    const res = await fetch(`${this.apiUrl}/v2/upload`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`
-      },
-      body: formData
-    })
-    if (!res.ok) {
-      const body = await res.text()
-      throw new Error(`Request to ${res.url} failed (${res.status}): ${body}`)
-    }
-    return (await res.json()) as UploadResponse
-  }
-
-  async robinUploadRequest(
-    request: UploadRequest,
-    appFile: string | null,
-    workspaceZip: string | null,
-    mappingFile: string | null
-  ): Promise<UploadResponse> {
-    const formData = new FormData()
 
     if (appFile) {
       formData.set('app_binary', fileFromSync(appFile))

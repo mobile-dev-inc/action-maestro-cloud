@@ -16,7 +16,7 @@ git add -A
 git commit --allow-empty -m "Version ${VERSION}"
 git tag -a "v${VERSION}" -m "Version ${VERSION}"
 git push
-git push --tags
+git push --tags --force
 # update major version tag
 git tag -fa "v${MAJOR_VERSION}" -m "Update v${MAJOR_VERSION} tag"
 git push origin "v${MAJOR_VERSION}" --force

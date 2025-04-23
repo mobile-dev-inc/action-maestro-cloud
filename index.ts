@@ -84,10 +84,7 @@ const run = async () => {
 
   const client = new ApiClient(apiKey, apiUrl, projectId)
 
-  /**
-   * If project Exist - Its Robin
-   */
-  info('Uploading to Robin')
+  info('Uploading to Maestro Cloud')
   const request: UploadRequest = {
     benchmarkName: name,
     projectId: projectId,

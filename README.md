@@ -26,7 +26,6 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 | `env`               | No                       | Environment variables to pass to the run                                        |
 | `exclude-tags`      | No                       | Comma-separated list of tags to exclude from the run                            |
 | `include-tags`      | No                       | Comma-separated list of tags to include in the run                              |
-| `ios-version`       | No                       | The iOS version to use when running the Flows                                   |
 | `mapping-file`      | No                       | Path to the ProGuard map (Android) or dSYM (iOS)                                |
 | `project-id`        | Yes                      | Which project to run the tests against                                          |
 | `name`              | No                       | Friendly name of the run                                                        |

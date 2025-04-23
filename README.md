@@ -103,7 +103,7 @@ Include the ProGuard mapping file to deobfuscate Android performance traces:
     mapping-file: <app_name>.app.dSYM
 ```
 
-`app-file` should point to an x86 compatible Simulator .app build, either directly to the file or a glob pattern matching the file name. When using a pattern, the first matched file will be used.
+`app-file` should point to an .app build (x86 or ARM), either directly to the file or a glob pattern matching the file name. When using a pattern, the first matched file will be used.
 
 ### .dSYM file
 

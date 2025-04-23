@@ -4,7 +4,7 @@ import { canceled, err, info, success, warning } from './log'
 
 const WAIT_TIMEOUT_MS = 1000 * 60 * 30 // 30 minutes
 const INTERVAL_MS = 10000 // 10 seconds
-const TERMINAL_STATUSES = new Set([RunStatus.SUCCESS, RunStatus.ERROR, RunStatus.WARNING, RunStatus.CANCELED])
+const TERMINAL_STATUSES = new Set([RunStatus.SUCCESS, RunStatus.ERROR, RunStatus.WARNING, RunStatus.CANCELED, RunStatus.STOPPED])
 
 const isCompleted = (flow: Flow): boolean => TERMINAL_STATUSES.has(flow.status)
 
@@ -38,6 +38,8 @@ const printFlowResult = (flow: Flow): void => {
     warning(`[Warning] ${flow.name}`)
   } else if (flow.status === RunStatus.CANCELED) {
     canceled(`[${getCanceledStatusMessage(flow.cancellationReason)}] ${flow.name}`)
+  } else if (flow.status === RunStatus.STOPPED) {
+    warning(`[Stopped] ${flow.name}`)
   }
 }
 
@@ -53,7 +55,7 @@ const printUploadResult = (status: UploadStatus, flows: Flow[]) => {
     err(getFailedFlowsCountStr(flows))
   } else {
     const passedFlows = flows.filter((flow) => flow.status === RunStatus.SUCCESS || flow.status === RunStatus.WARNING)
-    const canceledFlows = flows.filter((flow) => flow.status === RunStatus.CANCELED)
+    const canceledFlows = flows.filter((flow) => flow.status === RunStatus.CANCELED || flow.status === RunStatus.STOPPED)
 
     if (passedFlows.length > 0) {
       success(`${passedFlows.length}/${flows.length} ${flowWord(flows.length)} Passed`)

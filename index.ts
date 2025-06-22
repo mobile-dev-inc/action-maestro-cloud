@@ -73,7 +73,7 @@ const run = async () => {
   } = await getParameters()
 
   let appFile = null
-  if (appFilePath !== '') {
+  if (appFilePath !== '' && deviceOs !== 'web') {
     appFile = await validateAppFile(await zipIfFolder(appFilePath))
     if (!knownAppTypes.includes(appFile.type)) {
       throw new Error(`Unsupported app file type: ${appFile.type}`)

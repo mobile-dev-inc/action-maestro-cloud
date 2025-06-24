@@ -16,24 +16,24 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 
 ## Inputs
 
-| Key                 | Required                 | Description                                                                     |
-|---------------------|--------------------------|-------------------------------------------------------------------------------- |
-| `api-key`           | Yes                      | Your Maestro Cloud API key                                                      |
-| `android-api-level` | No                       | The Android API level to use when running the Flows                             |
-| `app-file`          | Yes (or `app-binary-id`) | Path to the app file to upload.                                                 |
-| `app-binary-id`     | Yes (or `app-file`)      | The ID of a previously uploaded app-file.                                       |
-| `async`             | No                       | Whether to start the flow and exit the action (defaults to `false`)             |
-| `env`               | No                       | Environment variables to pass to the run                                        |
-| `exclude-tags`      | No                       | Comma-separated list of tags to exclude from the run                            |
-| `include-tags`      | No                       | Comma-separated list of tags to include in the run                              |
-| `mapping-file`      | No                       | Path to the ProGuard map (Android) or dSYM (iOS)                                |
-| `project-id`        | Yes                      | Which project to run the tests against                                          |
-| `name`              | No                       | Friendly name of the run                                                        |
-| `timeout`           | No                       | How long to wait for the run to complete when not async (defaults to 30 minutes)|
-| `workspace`         | No                       | Path to the workspace directory containing the Flows (defaults to `.maestro`)   |
-| `device-model`      | No                       | The [device model](https://docs.maestro.dev/cloud/reference/configuring-os-version#using-a-specific-ios-minor-version-and-device-recommended) to use when running the Flows (eg iPhone-11)                   |
-| `device-os`         | No                       | The [device OS](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows (eg iOS-16-2)                       |
-| `device-locale`     | No                       | The [device locale](https://docs.maestro.dev/cloud/reference/configuring-device-locale) to use when running the Flows (eg en_US)                      |
+| Key                 | Required                 | Description                                                                                                                                                                                |
+| ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `api-key`           | Yes                      | Your Maestro Cloud API key                                                                                                                                                                 |
+| `android-api-level` | No                       | The Android API level to use when running the Flows                                                                                                                                        |
+| `app-file`          | Yes (or `app-binary-id`) | Path to the app file to upload.                                                                                                                                                            |
+| `app-binary-id`     | Yes (or `app-file`)      | The ID of a previously uploaded app-file.                                                                                                                                                  |
+| `async`             | No                       | Whether to start the flow and exit the action (defaults to `false`)                                                                                                                        |
+| `env`               | No                       | Environment variables to pass to the run                                                                                                                                                   |
+| `exclude-tags`      | No                       | Comma-separated list of tags to exclude from the run                                                                                                                                       |
+| `include-tags`      | No                       | Comma-separated list of tags to include in the run                                                                                                                                         |
+| `mapping-file`      | No                       | Path to the ProGuard map (Android) or dSYM (iOS)                                                                                                                                           |
+| `project-id`        | Yes                      | Which project to run the tests against                                                                                                                                                     |
+| `name`              | No                       | Friendly name of the run                                                                                                                                                                   |
+| `timeout`           | No                       | How long to wait for the run to complete when not async (defaults to 30 minutes)                                                                                                           |
+| `workspace`         | No                       | Path to the workspace directory containing the Flows (defaults to `.maestro`)                                                                                                              |
+| `device-model`      | No                       | The [device model](https://docs.maestro.dev/cloud/reference/configuring-os-version#using-a-specific-ios-minor-version-and-device-recommended) to use when running the Flows (eg iPhone-11) |
+| `device-os`         | No                       | The [device OS](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows (eg iOS-16-2)                                                               |
+| `device-locale`     | No                       | The [device locale](https://docs.maestro.dev/cloud/reference/configuring-device-locale) to use when running the Flows (eg en_US)                                                           |
 
 ## Triggers
 
@@ -235,23 +235,36 @@ On Maestro Cloud, the default iOS version is 16. [Refer to Maestro Cloud docs](h
     device-os: iOS-18-2
 ```
 
+## Running Web tests
+
+If your workspace contains Web tests that are supposed to run on a real browser, specify `device-os` as `web`.
+You don't have to specify `app-file`.
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    project-id: 'proj_01example0example1example2'
+    device-os: web
+```
+
 ## Using an already uploaded App
 
 You can use an already uploaded binary in Maestro Cloud using the `app-binary-id` parameter.
 
 ```yaml
-      - id: upload
-        uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: 'proj_01example0example1example2'
-          app-file: app.zip
+- id: upload
+  uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    project-id: 'proj_01example0example1example2'
+    app-file: app.zip
 
-      - uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: 'proj_01example0example1example2'
-          app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+- uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    project-id: 'proj_01example0example1example2'
+    app-binary-id: ${{ steps.upload.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
 ```
 
 ## Configuring the locale for the device where the flows will be executed
@@ -265,7 +278,6 @@ To switch the device locale on a remote device from a default one (en_US) `devic
     project-id: 'proj_01example0example1example2'
     app-file: app.zip
     device-locale: de_DE
-
 ```
 
 ## Outputs
@@ -317,8 +329,17 @@ In order to access these variables you can use the following approach:
 
 - `MAESTRO_CLOUD_FLOW_RESULTS`
 
-   An array of objects with at least `name`, `status`, and `errors` fields.
+  An array of objects with at least `name`, `status`, and `errors` fields.
 
-   ```json
-   [{"name":"my-first-flow","status":"SUCCESS","errors":[]},{"name":"my-second-flow","status":"SUCCESS","errors":[]},{"name":"my-cancelled-flow","status":"CANCELED","errors":[],"cancellationReason":"INFRA_ERROR"}]
-   ```
+  ```json
+  [
+    { "name": "my-first-flow", "status": "SUCCESS", "errors": [] },
+    { "name": "my-second-flow", "status": "SUCCESS", "errors": [] },
+    {
+      "name": "my-cancelled-flow",
+      "status": "CANCELED",
+      "errors": [],
+      "cancellationReason": "INFRA_ERROR"
+    }
+  ]
+  ```

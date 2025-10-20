@@ -29,7 +29,7 @@ export type Params = {
   timeout?: number
 }
 
-function getBranchName(branchInput?: string): string {
+export function getBranchName(branchInput?: string): string {
   // Priority 1: Use provided branch input if available
   if (branchInput && branchInput.trim() !== '') {
     return branchInput.trim()

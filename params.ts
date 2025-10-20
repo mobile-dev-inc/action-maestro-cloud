@@ -29,7 +29,13 @@ export type Params = {
   timeout?: number
 }
 
-function getBranchName(): string {
+function getBranchName(branchInput?: string): string {
+  // Priority 1: Use provided branch input if available
+  if (branchInput && branchInput.trim() !== '') {
+    return branchInput.trim()
+  }
+
+  // Priority 2: Try to get branch from pull_request context
   const pullRequest = github.context.payload.pull_request
   if (pullRequest) {
     const branchName = pullRequest?.head?.ref
@@ -45,6 +51,7 @@ function getBranchName(): string {
     return branchName
   }
 
+  // Priority 3: Fall back to parsing github.context.ref
   const regex = /refs\/(heads|tags)\/(.*)/
   const ref = github.context.ref
   let result = regex.exec(ref)
@@ -126,6 +133,7 @@ export async function getParameters(): Promise<Params> {
   const apiKey = core.getInput('api-key', { required: true })
   const mappingFileInput = core.getInput('mapping-file', { required: false })
   const workspaceFolder = core.getInput('workspace', { required: false })
+  const branchInput = core.getInput('branch', { required: false })
   const mappingFile = mappingFileInput && validateMappingFile(mappingFileInput)
   const async = core.getInput('async', { required: false }) === 'true'
   const androidApiLevelString = core.getInput('android-api-level', {
@@ -167,7 +175,7 @@ export async function getParameters(): Promise<Params> {
       return map
     }, env)
 
-  const branchName = getBranchName()
+  const branchName = getBranchName(branchInput)
   const commitSha = getCommitSha()
   const repoOwner = getRepoOwner()
   const repoName = getRepoName()

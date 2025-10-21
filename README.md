@@ -159,6 +159,7 @@ The `branch` input allows you to explicitly specify the branch name for these sc
 - Triggering workflows via API with `repository_dispatch`
 - Using `workflow_dispatch` to manually test a specific branch
 - Any scenario where the GitHub context doesn't accurately reflect the branch you want to test
+- You're making use of Maestro Cloud's 'Stop Previous Flows' feature, and want to be sure that the correct branch's flows are stopped.
 
 Example usage with `issue_comment` trigger:
 

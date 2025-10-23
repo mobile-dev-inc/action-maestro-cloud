@@ -23,6 +23,7 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 | `app-file`          | Yes (or `app-binary-id`) | Path to the app file to upload.                                                                                                                                                            |
 | `app-binary-id`     | Yes (or `app-file`)      | The ID of a previously uploaded app-file.                                                                                                                                                  |
 | `async`             | No                       | Whether to start the flow and exit the action (defaults to `false`)                                                                                                                        |
+| `branch`            | No                       | Branch name to use for the upload (overrides automatic detection)                                                                                                                          |
 | `env`               | No                       | Environment variables to pass to the run                                                                                                                                                   |
 | `exclude-tags`      | No                       | Comma-separated list of tags to exclude from the run                                                                                                                                       |
 | `include-tags`      | No                       | Comma-separated list of tags to include in the run                                                                                                                                         |
@@ -147,6 +148,46 @@ If you want to override this behaviour and specify your own name, you can do so 
     project-id: 'proj_01example0example1example2'
     app-file: app.zip
     name: My Upload
+```
+
+## Custom branch
+
+The action automatically detects the branch name from the GitHub context. However, in certain workflow triggers like `issue_comment`, `repository_dispatch`, or `workflow_dispatch`, the automatic detection may not work correctly because these events typically run on the default branch (main) regardless of which branch you actually want to test.
+
+The `branch` input allows you to explicitly specify the branch name for these scenarios. This is particularly useful when:
+- Running tests on a PR branch via `issue_comment` events (e.g., comment-triggered workflows)
+- Triggering workflows via API with `repository_dispatch`
+- Using `workflow_dispatch` to manually test a specific branch
+- Any scenario where the GitHub context doesn't accurately reflect the branch you want to test
+- You're making use of Maestro Cloud's 'Stop Previous Flows' feature, and want to be sure that the correct branch's flows are stopped.
+
+Example usage with `issue_comment` trigger:
+
+```yaml
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  test:
+    if: contains(github.event.comment.body, '/test')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR branch
+        id: pr
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HEAD_REF=$(gh pr view "$PR_NUMBER" --json headRefName --jq '.headRefName')
+          echo "branch=$HEAD_REF" >> $GITHUB_OUTPUT
+
+      - uses: mobile-dev-inc/action-maestro-cloud@v1.9.8
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          project-id: 'proj_01example0example1example2'
+          app-file: app.zip
+          branch: ${{ steps.pr.outputs.branch }}  # Explicitly specify PR branch
 ```
 
 ## Run in async mode

@@ -25102,7 +25102,7 @@ function patch (fs) {
         var backoff = 0;
         fs$rename(from, to, function CB (er) {
           if (er
-              && (er.code === "EACCES" || er.code === "EPERM")
+              && (er.code === "EACCES" || er.code === "EPERM" || er.code === "EBUSY")
               && Date.now() - start < 60000) {
             setTimeout(function() {
               fs.stat(to, function (stater, st) {
@@ -46521,13 +46521,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46551,7 +46561,7 @@ var RunStatus;
     RunStatus["CANCELED"] = "CANCELED";
     RunStatus["WARNING"] = "WARNING";
     RunStatus["STOPPED"] = "STOPPED";
-})(RunStatus = exports.RunStatus || (exports.RunStatus = {}));
+})(RunStatus || (exports.RunStatus = RunStatus = {}));
 var UploadStatus;
 (function (UploadStatus) {
     UploadStatus["PENDING"] = "PENDING";
@@ -46561,7 +46571,7 @@ var UploadStatus;
     UploadStatus["CANCELED"] = "CANCELED";
     UploadStatus["WARNING"] = "WARNING";
     UploadStatus["STOPPED"] = "STOPPED";
-})(UploadStatus = exports.UploadStatus || (exports.UploadStatus = {}));
+})(UploadStatus || (exports.UploadStatus = UploadStatus = {}));
 class UploadStatusError {
     constructor(status, text) {
         this.status = status;
@@ -46575,7 +46585,7 @@ var CancellationReason;
     CancellationReason["INFRA_ERROR"] = "INFRA_ERROR";
     CancellationReason["OVERLAPPING_BENCHMARK"] = "OVERLAPPING_BENCHMARK";
     CancellationReason["TIMEOUT"] = "TIMEOUT";
-})(CancellationReason = exports.CancellationReason || (exports.CancellationReason = {}));
+})(CancellationReason || (exports.CancellationReason = CancellationReason = {}));
 class ApiClient {
     constructor(apiKey, apiUrl, projectId) {
         this.apiKey = apiKey;
@@ -46676,13 +46686,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46775,8 +46795,8 @@ class StatusPoller {
         msg += `. View the Upload in the console for more information: ${this.consoleUrl}`;
         this.markFailed(msg);
     }
-    poll(sleep, prevErrorCount = 0) {
-        return __awaiter(this, void 0, void 0, function* () {
+    poll(sleep_1) {
+        return __awaiter(this, arguments, void 0, function* (sleep, prevErrorCount = 0) {
             if (this.stopped) {
                 return;
             }
@@ -46875,7 +46895,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateAppFile = exports.validateMappingFile = void 0;
+exports.validateMappingFile = validateMappingFile;
+exports.validateAppFile = validateAppFile;
 const node_stream_zip_1 = __importDefault(__nccwpck_require__(8119));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
@@ -46913,7 +46934,6 @@ function validateAbsolutePath(path) {
 function validateMappingFile(path) {
     return validateAbsolutePath(path);
 }
-exports.validateMappingFile = validateMappingFile;
 function validateAppFile(path) {
     return __awaiter(this, void 0, void 0, function* () {
         const absolutePath = getAbsolutePath(path);
@@ -46930,7 +46950,6 @@ function validateAppFile(path) {
         };
     });
 }
-exports.validateAppFile = validateAppFile;
 
 
 /***/ }),
@@ -46953,15 +46972,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.zipIfFolder = exports.zipFolder = void 0;
+exports.zipFolder = zipFolder;
+exports.zipIfFolder = zipIfFolder;
 const fs_1 = __nccwpck_require__(7147);
 const promises_1 = __nccwpck_require__(3292);
 const glob_1 = __nccwpck_require__(1957);
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const archiver = __nccwpck_require__(3084);
 const { createWriteStream } = __nccwpck_require__(7147);
-function zipFolder(inputDirectory, outputArchive, subdirectory = false) {
-    return __awaiter(this, void 0, void 0, function* () {
+function zipFolder(inputDirectory_1, outputArchive_1) {
+    return __awaiter(this, arguments, void 0, function* (inputDirectory, outputArchive, subdirectory = false) {
         return new Promise((resolve, reject) => {
             const output = createWriteStream(outputArchive);
             output.on('close', () => {
@@ -46979,7 +46999,6 @@ function zipFolder(inputDirectory, outputArchive, subdirectory = false) {
         });
     });
 }
-exports.zipFolder = zipFolder;
 function zipIfFolder(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
@@ -46999,7 +47018,6 @@ function zipIfFolder(inputPath) {
         }));
     });
 }
-exports.zipIfFolder = zipIfFolder;
 
 
 /***/ }),
@@ -47025,13 +47043,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47086,7 +47114,7 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, deviceModel, deviceOs, timeout, projectId, } = yield (0, params_1.getParameters)();
     let appFile = null;
-    if (appFilePath !== '') {
+    if (appFilePath !== '' && deviceOs !== 'web') {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
         if (!knownAppTypes.includes(appFile.type)) {
             throw new Error(`Unsupported app file type: ${appFile.type}`);
@@ -47182,13 +47210,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47199,12 +47237,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getParameters = void 0;
+exports.getBranchName = getBranchName;
+exports.getParameters = getParameters;
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const app_file_1 = __nccwpck_require__(9617);
-function getBranchName() {
+function getBranchName(branchInput) {
     var _a;
+    // Priority 1: Use provided branch input if available
+    if (branchInput && branchInput.trim() !== '') {
+        return branchInput.trim();
+    }
+    // Priority 2: Try to get branch from pull_request context
     const pullRequest = github.context.payload.pull_request;
     if (pullRequest) {
         const branchName = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.head) === null || _a === void 0 ? void 0 : _a.ref;
@@ -47213,6 +47257,7 @@ function getBranchName() {
         }
         return branchName;
     }
+    // Priority 3: Fall back to parsing github.context.ref
     const regex = /refs\/(heads|tags)\/(.*)/;
     const ref = github.context.ref;
     let result = regex.exec(ref);
@@ -47287,6 +47332,7 @@ function getParameters() {
         const apiKey = core.getInput('api-key', { required: true });
         const mappingFileInput = core.getInput('mapping-file', { required: false });
         const workspaceFolder = core.getInput('workspace', { required: false });
+        const branchInput = core.getInput('branch', { required: false });
         const mappingFile = mappingFileInput && (0, app_file_1.validateMappingFile)(mappingFileInput);
         const async = core.getInput('async', { required: false }) === 'true';
         const androidApiLevelString = core.getInput('android-api-level', {
@@ -47318,7 +47364,7 @@ function getParameters() {
             map[entry.key] = entry.value;
             return map;
         }, env);
-        const branchName = getBranchName();
+        const branchName = getBranchName(branchInput);
         const commitSha = getCommitSha();
         const repoOwner = getRepoOwner();
         const repoName = getRepoName();
@@ -47353,7 +47399,6 @@ function getParameters() {
         };
     });
 }
-exports.getParameters = getParameters;
 
 
 /***/ }),

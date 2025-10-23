@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "ncc build index.ts",
-    "release": "./_release.sh"
+    "release": "./_release.sh",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -20,8 +23,11 @@
   "homepage": "https://github.com/mobile-dev-inc/action-maestro-cloud#readme",
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^17.0.45",
-    "typescript": "^4.6.3"
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@actions/core": "^1.10.0",

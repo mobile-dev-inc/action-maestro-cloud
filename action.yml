@@ -22,6 +22,9 @@ inputs:
   workspace:
     description: "Path to a folder that contains Maestro flows (.mobiledev by default)"
     required: false
+  branch:
+    description: "Branch name to use for the upload metadata (overrides automatic detection). Used in Maestro Cloud for stopping previous flows."
+    required: false
   env:
     description: "Set of key=value entries to pass as an input to Maestro flows"
     required: false

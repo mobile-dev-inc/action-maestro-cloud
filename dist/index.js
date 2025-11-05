@@ -47343,12 +47343,17 @@ function getParameters() {
         const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
         const appFilePath = core.getInput('app-file', { required: false });
         const appBinaryId = core.getInput('app-binary-id', { required: false });
-        if (!(appFilePath !== '') !== (appBinaryId !== '')) {
-            throw new Error('Either app-file or app-binary-id must be used');
+        const deviceOs = core.getInput('device-os', { required: false });
+        const hasAppFile = appFilePath !== '';
+        const hasAppBinaryId = appBinaryId !== '';
+        if (deviceOs === 'web' && (hasAppFile || hasAppBinaryId)) {
+            throw new Error('For web tests, neither app-file nor app-binary-id should be provided');
+        }
+        if (deviceOs !== 'web' && hasAppFile === hasAppBinaryId) {
+            throw new Error('Either app-file or app-binary-id must be used (but not both) for mobile tests');
         }
         const deviceLocale = core.getInput('device-locale', { required: false });
         const deviceModel = core.getInput('device-model', { required: false });
-        const deviceOs = core.getInput('device-os', { required: false });
         const timeoutString = core.getInput('timeout', { required: false });
         var env = {};
         env = core

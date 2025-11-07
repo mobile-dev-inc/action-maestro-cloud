@@ -9,7 +9,8 @@ const { createWriteStream } = require("fs");
 export async function zipFolder(
     inputDirectory: string,
     outputArchive: string,
-    subdirectory: string | boolean = false
+    subdirectory: string | boolean = false,
+    exclude: string[] = ['.git/**', 'node_modules/**']
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const output = createWriteStream(outputArchive);
@@ -27,7 +28,14 @@ export async function zipFolder(
         archive.pipe(output);
 
         if (existsSync(inputDirectory)) {
-            archive.directory(inputDirectory, subdirectory);
+            // Use glob to include all files except those that match exclude patterns
+            archive.glob('**/*', {
+                cwd: inputDirectory,
+                ignore: exclude,
+                dot: true
+            }, {
+                prefix: subdirectory === false ? '' : (typeof subdirectory === 'string' ? subdirectory : path.basename(inputDirectory))
+            });
         }
 
         archive.finalize();

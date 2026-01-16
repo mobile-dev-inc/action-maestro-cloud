@@ -46981,8 +46981,11 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 const archiver = __nccwpck_require__(3084);
 const { createWriteStream } = __nccwpck_require__(7147);
 function zipFolder(inputDirectory_1, outputArchive_1) {
-    return __awaiter(this, arguments, void 0, function* (inputDirectory, outputArchive, subdirectory = false, exclude = ['.git/**', 'node_modules/**']) {
+    return __awaiter(this, arguments, void 0, function* (inputDirectory, outputArchive, subdirectory = false, globPatternsToExcludeFromArchive = ['.git/**', 'node_modules/**']) {
         return new Promise((resolve, reject) => {
+            if (!(0, fs_1.existsSync)(inputDirectory)) {
+                return reject(new Error(`Input directory does not exist: ${inputDirectory}`));
+            }
             const output = createWriteStream(outputArchive);
             output.on('close', () => {
                 resolve(true);
@@ -46992,16 +46995,31 @@ function zipFolder(inputDirectory_1, outputArchive_1) {
                 reject(err);
             });
             archive.pipe(output);
-            if ((0, fs_1.existsSync)(inputDirectory)) {
-                // Use glob to include all files except those that match exclude patterns
-                archive.glob('**/*', {
-                    cwd: inputDirectory,
-                    ignore: exclude,
-                    dot: true
-                }, {
-                    prefix: subdirectory === false ? '' : (typeof subdirectory === 'string' ? subdirectory : path_1.default.basename(inputDirectory))
-                });
+            // Files to include in the archive
+            const globPattern = '**/*';
+            // Options controlling which files are matched
+            const globOptions = {
+                cwd: inputDirectory,
+                ignore: globPatternsToExcludeFromArchive,
+                dot: true, // Include dotfiles
+            };
+            // Determine where files should appear inside the archive. Mirrors matching logic for this parameter inside archiver.
+            let archivePrefix;
+            if (subdirectory === false) {
+                archivePrefix = '';
             }
+            else if (typeof subdirectory === 'string') {
+                archivePrefix = subdirectory;
+            }
+            else {
+                archivePrefix = path_1.default.basename(inputDirectory);
+            }
+            // Options controlling how matched files are added to the archive
+            const archiveOptions = {
+                prefix: archivePrefix,
+            };
+            // Use glob to include all files, plus dotfiles, but not the exclusions
+            archive.glob(globPattern, globOptions, archiveOptions);
             archive.finalize();
         });
     });

@@ -9,9 +9,14 @@ const { createWriteStream } = require("fs");
 export async function zipFolder(
     inputDirectory: string,
     outputArchive: string,
-    subdirectory: string | boolean = false
+    subdirectory: string | boolean = false,
+    globPatternsToExcludeFromArchive: string[] = ['.git/**', 'node_modules/**']
 ): Promise<any> {
     return new Promise((resolve, reject) => {
+        if (!existsSync(inputDirectory)) {
+           return reject(new Error(`Input directory does not exist: ${inputDirectory}`));
+        }
+
         const output = createWriteStream(outputArchive);
 
         output.on('close', () => {
@@ -26,9 +31,33 @@ export async function zipFolder(
 
         archive.pipe(output);
 
-        if (existsSync(inputDirectory)) {
-            archive.directory(inputDirectory, subdirectory);
+        // Files to include in the archive
+        const globPattern = '**/*';
+
+        // Options controlling which files are matched
+        const globOptions = {
+            cwd: inputDirectory,
+            ignore: globPatternsToExcludeFromArchive,
+            dot: true, // Include dotfiles
+        };
+
+        // Determine where files should appear inside the archive. Mirrors matching logic for this parameter inside archiver.
+        let archivePrefix: string;
+        if (subdirectory === false) {
+            archivePrefix = '';
+        } else if (typeof subdirectory === 'string') {
+            archivePrefix = subdirectory;
+        } else {
+            archivePrefix = path.basename(inputDirectory);
         }
+
+        // Options controlling how matched files are added to the archive
+        const archiveOptions = {
+            prefix: archivePrefix,
+        };
+
+        // Use glob to include all files, plus dotfiles, but not the exclusions
+        archive.glob(globPattern, globOptions, archiveOptions);
 
         archive.finalize();
     });

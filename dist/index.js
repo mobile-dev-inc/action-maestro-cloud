@@ -46981,7 +46981,7 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 const archiver = __nccwpck_require__(3084);
 const { createWriteStream } = __nccwpck_require__(7147);
 function zipFolder(inputDirectory_1, outputArchive_1) {
-    return __awaiter(this, arguments, void 0, function* (inputDirectory, outputArchive, subdirectory = false) {
+    return __awaiter(this, arguments, void 0, function* (inputDirectory, outputArchive, subdirectory = false, exclude = ['.git/**', 'node_modules/**']) {
         return new Promise((resolve, reject) => {
             const output = createWriteStream(outputArchive);
             output.on('close', () => {
@@ -46993,7 +46993,14 @@ function zipFolder(inputDirectory_1, outputArchive_1) {
             });
             archive.pipe(output);
             if ((0, fs_1.existsSync)(inputDirectory)) {
-                archive.directory(inputDirectory, subdirectory);
+                // Use glob to include all files except those that match exclude patterns
+                archive.glob('**/*', {
+                    cwd: inputDirectory,
+                    ignore: exclude,
+                    dot: true
+                }, {
+                    prefix: subdirectory === false ? '' : (typeof subdirectory === 'string' ? subdirectory : path_1.default.basename(inputDirectory))
+                });
             }
             archive.finalize();
         });

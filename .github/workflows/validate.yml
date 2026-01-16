@@ -8,18 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
-      - name: Install JDK 8
-        uses: actions/setup-java@v2
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
         with:
           distribution: "zulu"
-          java-version: 8
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+          java-version: 17
 
       - name: Install Maestro
         run: |
@@ -32,7 +27,7 @@ jobs:
           maestro download-samples
 
       - name: Run Android test
-        uses: mobile-dev-inc/action-maestro-cloud@v1
+        uses: mobile-dev-inc/action-maestro-cloud@v2
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
@@ -41,11 +36,12 @@ jobs:
           include-tags: advanced
         
       - name: Run iOS test
-        uses: mobile-dev-inc/action-maestro-cloud@v1
+        uses: mobile-dev-inc/action-maestro-cloud@v2
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
           app-file: samples/wikipedia.zip
           workspace: samples
           include-tags: advanced
+          device-os: iOS-18-2
           timeout: 180

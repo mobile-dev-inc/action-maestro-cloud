@@ -278,7 +278,7 @@ Android example:
     device-os: android-33
 ```
 
-> **Note:** The previous `android-api-level` and `ios-version` inputs are deprecated. `ios-version` has been removed; `android-api-level` still works but will emit a deprecation warning — switch to `device-os` (e.g. `android-33`).
+> **Note:** The previous `android-api-level` and `ios-version` inputs are deprecated. They still work but will emit a deprecation warning — switch to `device-os` (e.g. `device-os: android-33` or `device-os: iOS-18-2`).
 
 ## Running Web tests
 

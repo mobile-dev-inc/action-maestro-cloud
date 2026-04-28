@@ -47103,6 +47103,7 @@ const ApiClient_1 = __importDefault(__nccwpck_require__(9494));
 const app_file_1 = __nccwpck_require__(9617);
 const archive_utils_1 = __nccwpck_require__(1132);
 const params_1 = __nccwpck_require__(805);
+const uploadRequest_1 = __nccwpck_require__(9964);
 const fs_1 = __nccwpck_require__(7147);
 const StatusPoller_1 = __importDefault(__nccwpck_require__(2575));
 const log_1 = __nccwpck_require__(3826);
@@ -47137,7 +47138,8 @@ const createWorkspaceZip = (workspaceFolder) => __awaiter(void 0, void 0, void 0
     return 'workspace.zip';
 });
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, apiUrl, name, appFilePath, mappingFile, workspaceFolder, branchName, commitSha, repoOwner, repoName, pullRequestId, env, async, androidApiLevel, iOSVersion, includeTags, excludeTags, appBinaryId, deviceLocale, deviceModel, deviceOs, timeout, projectId, } = yield (0, params_1.getParameters)();
+    const params = yield (0, params_1.getParameters)();
+    const { apiKey, apiUrl, appFilePath, mappingFile, workspaceFolder, async, deviceOs, timeout, projectId, } = params;
     let appFile = null;
     if (appFilePath !== '' && deviceOs !== 'web') {
         appFile = yield (0, app_file_1.validateAppFile)(yield (0, archive_utils_1.zipIfFolder)(appFilePath));
@@ -47148,25 +47150,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const workspaceZip = yield createWorkspaceZip(workspaceFolder);
     const client = new ApiClient_1.default(apiKey, apiUrl, projectId);
     (0, log_1.info)('Uploading to Maestro Cloud');
-    const request = {
-        benchmarkName: name,
-        projectId: projectId,
-        repoOwner: repoOwner,
-        repoName: repoName,
-        agent: 'github',
-        branch: branchName,
-        commitSha: commitSha,
-        pullRequestId: pullRequestId,
-        env: env,
-        androidApiLevel: androidApiLevel,
-        iOSVersion: iOSVersion,
-        includeTags: includeTags,
-        excludeTags: excludeTags,
-        appBinaryId: appBinaryId || undefined,
-        deviceLocale: deviceLocale || undefined,
-        deviceModel: deviceModel || undefined,
-        deviceOs: deviceOs || undefined,
-    };
+    const request = (0, uploadRequest_1.buildUploadRequest)(params);
     const { uploadId, appId, appBinaryId: appBinaryIdResponse, } = yield client.cloudUploadRequest(request, appFile && appFile.path, workspaceZip, mappingFile && (yield (0, archive_utils_1.zipIfFolder)(mappingFile)));
     const consoleUrl = `https://app.maestro.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
     core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
@@ -47363,7 +47347,13 @@ function getParameters() {
         const androidApiLevelString = core.getInput('android-api-level', {
             required: false,
         });
+        if (androidApiLevelString) {
+            core.warning("'android-api-level' is deprecated and will be removed in a future release. Use 'device-os' instead (e.g. device-os: android-33).");
+        }
         const iOSVersionString = core.getInput('ios-version', { required: false });
+        if (iOSVersionString) {
+            core.warning("'ios-version' is deprecated and will be removed in a future release. Use 'device-os' instead (e.g. device-os: iOS-18-2).");
+        }
         const includeTags = parseTags(core.getInput('include-tags', { required: false }));
         const excludeTags = parseTags(core.getInput('exclude-tags', { required: false }));
         const appFilePath = core.getInput('app-file', { required: false });
@@ -47429,6 +47419,37 @@ function getParameters() {
         };
     });
 }
+
+
+/***/ }),
+
+/***/ 9964:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.buildUploadRequest = void 0;
+const buildUploadRequest = (params) => ({
+    benchmarkName: params.name,
+    projectId: params.projectId,
+    repoOwner: params.repoOwner,
+    repoName: params.repoName,
+    agent: 'github',
+    branch: params.branchName,
+    commitSha: params.commitSha,
+    pullRequestId: params.pullRequestId,
+    env: params.env,
+    androidApiLevel: params.androidApiLevel,
+    iOSVersion: params.iOSVersion,
+    includeTags: params.includeTags,
+    excludeTags: params.excludeTags,
+    appBinaryId: params.appBinaryId || undefined,
+    deviceLocale: params.deviceLocale || undefined,
+    deviceModel: params.deviceModel || undefined,
+    deviceOs: params.deviceOs || undefined,
+});
+exports.buildUploadRequest = buildUploadRequest;
 
 
 /***/ }),

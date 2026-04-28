@@ -19,6 +19,7 @@ export type Params = {
   env?: { [key: string]: string }
   async?: boolean
   androidApiLevel?: number
+  iOSVersion?: number
   includeTags: string[]
   excludeTags: string[]
   appBinaryId: string
@@ -101,6 +102,10 @@ function getAndroidApiLevel(apiLevel?: string): number | undefined {
   return apiLevel ? +apiLevel : undefined
 }
 
+function getIOSVersion(iosVersion?: string): number | undefined {
+  return iosVersion ? +iosVersion : undefined
+}
+
 function getTimeout(timeout?: string): number | undefined {
   return timeout ? +timeout : undefined
 }
@@ -139,9 +144,10 @@ export async function getParameters(): Promise<Params> {
       "'android-api-level' is deprecated and will be removed in a future release. Use 'device-os' instead (e.g. device-os: android-33)."
     )
   }
-  if (core.getInput('ios-version', { required: false })) {
+  const iOSVersionString = core.getInput('ios-version', { required: false })
+  if (iOSVersionString) {
     core.warning(
-      "'ios-version' has been removed and is no longer applied. Use 'device-os' instead (e.g. device-os: iOS-18-2)."
+      "'ios-version' is deprecated and will be removed in a future release. Use 'device-os' instead (e.g. device-os: iOS-18-2)."
     )
   }
   const includeTags = parseTags(
@@ -193,6 +199,7 @@ export async function getParameters(): Promise<Params> {
   const repoName = getRepoName()
   const pullRequestId = getPullRequestId()
   const androidApiLevel = getAndroidApiLevel(androidApiLevelString)
+  const iOSVersion = getIOSVersion(iOSVersionString)
   const timeout = getTimeout(timeoutString)
 
   return {
@@ -210,6 +217,7 @@ export async function getParameters(): Promise<Params> {
     env,
     async,
     androidApiLevel,
+    iOSVersion,
     includeTags,
     excludeTags,
     appBinaryId,

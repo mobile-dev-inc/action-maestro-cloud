@@ -43,7 +43,8 @@ describe('getParameters deprecation behaviour', () => {
     setInputs(baseInputs)
     const params = await getParameters()
     expect(warnSpy).not.toHaveBeenCalled()
-    expect((params as any).iOSVersion).toBeUndefined()
+    expect(params.androidApiLevel).toBeUndefined()
+    expect(params.iOSVersion).toBeUndefined()
   })
 
   it('warns and still forwards android-api-level', async () => {
@@ -55,13 +56,13 @@ describe('getParameters deprecation behaviour', () => {
     expect(params.androidApiLevel).toBe(29)
   })
 
-  it('warns on ios-version but does not forward it', async () => {
+  it('warns and still forwards ios-version', async () => {
     setInputs({ ...baseInputs, 'ios-version': '17' })
     const params = await getParameters()
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("'ios-version' has been removed")
+      expect.stringContaining("'ios-version' is deprecated")
     )
-    expect((params as any).iOSVersion).toBeUndefined()
+    expect(params.iOSVersion).toBe(17)
   })
 
   it('forwards device-os and device-model unchanged', async () => {

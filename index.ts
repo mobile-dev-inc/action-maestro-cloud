@@ -6,6 +6,7 @@ import ApiClient, {
 import { validateAppFile } from './app_file'
 import { zipFolder, zipIfFolder } from './archive_utils'
 import { getParameters } from './params'
+import { buildUploadRequest } from './uploadRequest'
 import { existsSync, readdirSync } from 'fs'
 import StatusPoller from './StatusPoller'
 import { info } from './log'
@@ -46,30 +47,18 @@ const createWorkspaceZip = async (
 }
 
 const run = async () => {
+  const params = await getParameters()
   const {
     apiKey,
     apiUrl,
-    name,
     appFilePath,
     mappingFile,
     workspaceFolder,
-    branchName,
-    commitSha,
-    repoOwner,
-    repoName,
-    pullRequestId,
-    env,
     async,
-    androidApiLevel,
-    includeTags,
-    excludeTags,
-    appBinaryId,
-    deviceLocale,
-    deviceModel,
     deviceOs,
     timeout,
     projectId,
-  } = await getParameters()
+  } = params
 
   let appFile = null
   if (appFilePath !== '' && deviceOs !== 'web') {
@@ -84,24 +73,7 @@ const run = async () => {
   const client = new ApiClient(apiKey, apiUrl, projectId)
 
   info('Uploading to Maestro Cloud')
-  const request: UploadRequest = {
-    benchmarkName: name,
-    projectId: projectId,
-    repoOwner: repoOwner,
-    repoName: repoName,
-    agent: 'github',
-    branch: branchName,
-    commitSha: commitSha,
-    pullRequestId: pullRequestId,
-    env: env,
-    androidApiLevel: androidApiLevel,
-    includeTags: includeTags,
-    excludeTags: excludeTags,
-    appBinaryId: appBinaryId || undefined,
-    deviceLocale: deviceLocale || undefined,
-    deviceModel: deviceModel || undefined,
-    deviceOs: deviceOs || undefined,
-  }
+  const request: UploadRequest = buildUploadRequest(params)
   const {
     uploadId,
     appId,

@@ -47155,6 +47155,11 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     const consoleUrl = `https://app.maestro.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`;
     core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl);
     core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryIdResponse);
+    (0, log_1.info)('Visit Maestro Cloud for more details about this upload:');
+    (0, log_1.info)(consoleUrl);
+    if (appBinaryIdResponse)
+        (0, log_1.info)(`App binary id: ${appBinaryIdResponse}`);
+    (0, log_1.info)('');
     !async &&
         new StatusPoller_1.default(client, uploadId, consoleUrl).startPolling(timeout);
 });

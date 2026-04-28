@@ -87,6 +87,12 @@ const run = async () => {
   const consoleUrl = `https://app.maestro.dev/project/${projectId}/maestro-test/app/${appId}/upload/${uploadId}`
   core.setOutput('MAESTRO_CLOUD_CONSOLE_URL', consoleUrl)
   core.setOutput('MAESTRO_CLOUD_APP_BINARY_ID', appBinaryIdResponse)
+
+  info('Visit Maestro Cloud for more details about this upload:')
+  info(consoleUrl)
+  if (appBinaryIdResponse) info(`App binary id: ${appBinaryIdResponse}`)
+  info('')
+
   !async &&
     new StatusPoller(client, uploadId, consoleUrl).startPolling(timeout)
 }

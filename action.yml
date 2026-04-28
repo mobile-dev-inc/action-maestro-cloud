@@ -32,8 +32,9 @@ inputs:
     description: "Whether to run Upload in async fashion and not block until completed"
     required: false
   android-api-level:
-    description: "Android API level to run your flow against"
+    description: "[Deprecated] Android API level to run your flow against. Use 'device-os' instead (e.g. android-33)."
     required: false
+    deprecationMessage: "'android-api-level' is deprecated. Use 'device-os' instead (e.g. device-os: android-33)."
   device-locale:
     description: "Device locale to run your flow against"
     required: false

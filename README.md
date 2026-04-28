@@ -19,7 +19,7 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 | Key                 | Required                 | Description                                                                                                                                                                                |
 | ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `api-key`           | Yes                      | Your Maestro Cloud API key                                                                                                                                                                 |
-| `android-api-level` | No                       | The Android API level to use when running the Flows                                                                                                                                        |
+| `android-api-level` | No                       | **Deprecated.** Use `device-os` instead (e.g. `android-33`).                                                                                                                               |
 | `app-file`          | Yes (or `app-binary-id`) | Path to the app file to upload.                                                                                                                                                            |
 | `app-binary-id`     | Yes (or `app-file`)      | The ID of a previously uploaded app-file.                                                                                                                                                  |
 | `async`             | No                       | Whether to start the flow and exit the action (defaults to `false`)                                                                                                                        |
@@ -32,8 +32,8 @@ Add the following to your workflow. Note that you can use the `v1` tag if you wa
 | `name`              | No                       | Friendly name of the run                                                                                                                                                                   |
 | `timeout`           | No                       | How long to wait for the run to complete when not async (defaults to 30 minutes)                                                                                                           |
 | `workspace`         | No                       | Path to the workspace directory containing the Flows (defaults to `.maestro`)                                                                                                              |
-| `device-model`      | No                       | The [device model](https://docs.maestro.dev/cloud/reference/configuring-os-version#using-a-specific-ios-minor-version-and-device-recommended) to use when running the Flows (eg iPhone-11) |
-| `device-os`         | No                       | The [device OS](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows (eg iOS-16-2)                                                               |
+| `device-model`      | No                       | The [device model](https://docs.maestro.dev/cloud/reference/configuring-os-version#using-a-specific-ios-minor-version-and-device-recommended) to use when running the Flows. Supported: iOS — `iPhone-11`, `iPhone-11-Pro`, etc.; Android — `pixel_6`, `pixel_7`, etc. |
+| `device-os`         | No                       | The [device OS version](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows. iOS: `iOS-16-2`, `iOS-17-5`, `iOS-18-2`, etc. Android: `android-33`, `android-34`, etc.                                                        |
 | `device-locale`     | No                       | The [device locale](https://docs.maestro.dev/cloud/reference/configuring-device-locale) to use when running the Flows (eg en_US)                                                           |
 
 ## Triggers
@@ -245,26 +245,16 @@ You can either pass a single value, or comma-separated (`,`) values.
     exclude-tags: excludeTag
 ```
 
-## Specifying Android API Level
+## Specifying device model and OS version
 
-You can specify which Android API level to use when running using the `android-api-level` parameter.
+Use `device-model` and `device-os` to pick the device and OS version your Flows run against. You can run `maestro list-devices` locally to see what's available, or [refer to the Maestro Cloud docs](https://docs.maestro.dev/cloud/reference/configuring-os-version).
 
-On Maestro Cloud, the default API level is 33 (Android 13). [Refer to Maestro Cloud docs](https://docs.maestro.dev/cloud/reference/configuring-os-version) for available Android emulator API levels.
+Supported values:
 
-```yaml
-- uses: mobile-dev-inc/action-maestro-cloud@v2.0.2
-  with:
-    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-    project-id: 'proj_01example0example1example2'
-    app-file: app.apk
-    android-api-level: 29
-```
+- `device-model` — iOS: `iPhone-11`, `iPhone-11-Pro`, etc.; Android: `pixel_6`, `pixel_7`, etc.
+- `device-os` — iOS: `iOS-16-2`, `iOS-17-5`, `iOS-18-2`, etc.; Android: `android-33`, `android-34`, etc.
 
-## Specifying iOS version and device
-
-You can specify which iOS Version to use when running in Maestro Cloud using the `device-os` parameter.
-
-On Maestro Cloud, the default iOS version is 16. [Refer to Maestro Cloud docs](https://docs.maestro.dev/cloud/reference/configuring-os-version) for available iOS simulator versions. On Maestro Cloud, the default iOS version is 16.
+iOS example:
 
 ```yaml
 - uses: mobile-dev-inc/action-maestro-cloud@v2.0.2
@@ -272,9 +262,23 @@ On Maestro Cloud, the default iOS version is 16. [Refer to Maestro Cloud docs](h
     api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
     project-id: 'proj_01example0example1example2'
     app-file: app.zip
-    device-model: iPhone-16
+    device-model: iPhone-11
     device-os: iOS-18-2
 ```
+
+Android example:
+
+```yaml
+- uses: mobile-dev-inc/action-maestro-cloud@v2.0.2
+  with:
+    api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+    project-id: 'proj_01example0example1example2'
+    app-file: app.apk
+    device-model: pixel_6
+    device-os: android-33
+```
+
+> **Note:** The previous `android-api-level` and `ios-version` inputs are deprecated. `ios-version` has been removed; `android-api-level` still works but will emit a deprecation warning — switch to `device-os` (e.g. `android-33`).
 
 ## Running Web tests
 

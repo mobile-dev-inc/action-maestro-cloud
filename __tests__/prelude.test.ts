@@ -102,6 +102,12 @@ describe('branch resolution', () => {
     expect(exportedVars.MDEV_BRANCH).toBe('feature/foo')
   })
 
+  it('falls through whitespace-only branch input to ref parsing', async () => {
+    setInputs({ ...required, 'app-file': 'app.apk', branch: '   ' })
+    await main()
+    expect(exportedVars.MDEV_BRANCH).toBe('main')
+  })
+
   it('falls back to PR head ref when no input', async () => {
     ;(github as any).context.payload = {
       pull_request: { head: { ref: 'feature/pr-branch', sha: 'abc123' } },

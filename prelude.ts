@@ -7,7 +7,7 @@ export function getBranchName(branchInput?: string): string {
   }
   const pullRequest = github.context.payload.pull_request
   if (pullRequest) {
-    const branchName = (pullRequest as any)?.head?.ref
+    const branchName = pullRequest?.head?.ref
     if (!branchName) {
       throw new Error(
         `Unable find pull request ref: ${JSON.stringify(pullRequest, undefined, 2)}`

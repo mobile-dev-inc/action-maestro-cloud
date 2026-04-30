@@ -1700,24 +1700,28 @@ runs:
     - name: Derive GitHub context
       shell: bash
       env:
-        INPUT_API_KEY: ${{ inputs.api-key }}
-        INPUT_API_URL: ${{ inputs.api-url }}
-        INPUT_PROJECT_ID: ${{ inputs.project-id }}
+        # Note: env var names preserve the hyphens from action input names because
+        # @actions/core's getInput('app-file') reads from INPUT_APP-FILE (it only
+        # replaces spaces with underscores, not hyphens). The test harness in
+        # __tests__/prelude.test.ts uses the same convention.
+        INPUT_API-KEY: ${{ inputs.api-key }}
+        INPUT_API-URL: ${{ inputs.api-url }}
+        INPUT_PROJECT-ID: ${{ inputs.project-id }}
         INPUT_NAME: ${{ inputs.name }}
-        INPUT_APP_FILE: ${{ inputs.app-file }}
-        INPUT_APP_BINARY_ID: ${{ inputs.app-binary-id }}
-        INPUT_MAPPING_FILE: ${{ inputs.mapping-file }}
+        INPUT_APP-FILE: ${{ inputs.app-file }}
+        INPUT_APP-BINARY-ID: ${{ inputs.app-binary-id }}
+        INPUT_MAPPING-FILE: ${{ inputs.mapping-file }}
         INPUT_WORKSPACE: ${{ inputs.workspace }}
         INPUT_BRANCH: ${{ inputs.branch }}
         INPUT_ENV: ${{ inputs.env }}
         INPUT_ASYNC: ${{ inputs.async }}
-        INPUT_ANDROID_API_LEVEL: ${{ inputs.android-api-level }}
-        INPUT_IOS_VERSION: ${{ inputs.ios-version }}
-        INPUT_DEVICE_LOCALE: ${{ inputs.device-locale }}
-        INPUT_DEVICE_MODEL: ${{ inputs.device-model }}
-        INPUT_DEVICE_OS: ${{ inputs.device-os }}
-        INPUT_INCLUDE_TAGS: ${{ inputs.include-tags }}
-        INPUT_EXCLUDE_TAGS: ${{ inputs.exclude-tags }}
+        INPUT_ANDROID-API-LEVEL: ${{ inputs.android-api-level }}
+        INPUT_IOS-VERSION: ${{ inputs.ios-version }}
+        INPUT_DEVICE-LOCALE: ${{ inputs.device-locale }}
+        INPUT_DEVICE-MODEL: ${{ inputs.device-model }}
+        INPUT_DEVICE-OS: ${{ inputs.device-os }}
+        INPUT_INCLUDE-TAGS: ${{ inputs.include-tags }}
+        INPUT_EXCLUDE-TAGS: ${{ inputs.exclude-tags }}
         INPUT_TIMEOUT: ${{ inputs.timeout }}
       run: node "${{ github.action_path }}/dist/prelude.js"
 

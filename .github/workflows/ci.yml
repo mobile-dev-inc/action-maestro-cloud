@@ -7,17 +7,36 @@ on:
       - main
 
 jobs:
-  build:
+  test-prelude:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-    
-      - name: Install dependencies
-        run: npm install
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Verify dist/prelude.js is committed and current
+        run: |
+          if ! git diff --quiet dist/prelude.js; then
+            echo "::error::dist/prelude.js is out of date — run 'npm run build' and commit."
+            git diff dist/prelude.js | head -50
+            exit 1
+          fi
 
-      - name: Test
-        run: npm test
-           
-      - name: Build
-        run: npm run build
+  test-run-cloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+          mkdir -p test/bats
+          git clone --depth 1 https://github.com/bats-core/bats-support.git test/bats/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git test/bats/bats-assert
+      - name: Run bats
+        env:
+          BATS_LIB_PATH: ${{ github.workspace }}/test/bats
+        run: bats __tests__/run-cloud.bats

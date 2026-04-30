@@ -23,7 +23,7 @@ const setInputs = (inputs: Record<string, string>) => {
     if (k.startsWith('INPUT_')) delete process.env[k]
   }
   for (const [k, v] of Object.entries(inputs)) {
-    process.env[`INPUT_${k.toUpperCase().replace(/-/g, '_')}`] = v
+    process.env[`INPUT_${k.replace(/ /g, '_').toUpperCase()}`] = v
   }
 }
 
@@ -219,5 +219,76 @@ describe('name resolution', () => {
     setInputs({ ...required, 'app-file': 'app.apk' })
     await main()
     expect(exportedVars.MDEV_NAME).toBe('deadbeef')
+  })
+})
+
+describe('input validation', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('mobile: rejects when both app-file and app-binary-id given', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', 'app-binary-id': 'b' })
+    await main()
+    expect(failures[0]).toMatch(/Either app-file or app-binary-id must be used \(but not both\)/)
+  })
+
+  it('mobile: rejects when neither app-file nor app-binary-id given', async () => {
+    setInputs({ ...required })
+    await main()
+    expect(failures[0]).toMatch(/Either app-file or app-binary-id must be used \(but not both\)/)
+  })
+
+  it('mobile: accepts app-file alone', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(failures).toEqual([])
+  })
+
+  it('mobile: accepts app-binary-id alone', async () => {
+    setInputs({ ...required, 'app-binary-id': 'bin_x' })
+    await main()
+    expect(failures).toEqual([])
+  })
+
+  it('web: rejects app-file', async () => {
+    setInputs({ ...required, 'device-os': 'web', 'app-file': 'a.apk' })
+    await main()
+    expect(failures[0]).toMatch(/For web tests, neither app-file nor app-binary-id should be provided/)
+  })
+
+  it('web: rejects app-binary-id', async () => {
+    setInputs({ ...required, 'device-os': 'web', 'app-binary-id': 'bin_x' })
+    await main()
+    expect(failures[0]).toMatch(/For web tests, neither app-file nor app-binary-id should be provided/)
+  })
+
+  it('web: accepts neither', async () => {
+    setInputs({ ...required, 'device-os': 'web' })
+    await main()
+    expect(failures).toEqual([])
   })
 })

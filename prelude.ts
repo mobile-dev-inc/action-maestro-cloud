@@ -37,6 +37,21 @@ export function getInferredName(): string {
   return ctx.sha
 }
 
+export function validateAppInputs(
+  appFile: string,
+  appBinaryId: string,
+  deviceOs: string
+): void {
+  const hasAppFile = appFile !== ''
+  const hasAppBinaryId = appBinaryId !== ''
+  if (deviceOs === 'web' && (hasAppFile || hasAppBinaryId)) {
+    throw new Error('For web tests, neither app-file nor app-binary-id should be provided')
+  }
+  if (deviceOs !== 'web' && hasAppFile === hasAppBinaryId) {
+    throw new Error('Either app-file or app-binary-id must be used (but not both) for mobile tests')
+  }
+}
+
 export async function main(): Promise<void> {
   try {
     const branchInput = core.getInput('branch') || undefined
@@ -45,6 +60,10 @@ export async function main(): Promise<void> {
     const nameInput = core.getInput('name')
     const name = nameInput || getInferredName()
     core.exportVariable('MDEV_NAME', name)
+    const appFile = core.getInput('app-file')
+    const appBinaryId = core.getInput('app-binary-id')
+    const deviceOs = core.getInput('device-os')
+    validateAppInputs(appFile, appBinaryId, deviceOs)
   } catch (e: any) {
     core.setFailed(e.message)
   }

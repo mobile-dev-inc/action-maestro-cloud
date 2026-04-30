@@ -69,3 +69,90 @@ assert_args_contain() {
   assert_args_contain "--flows flows"
   refute_output --partial "stub"
 }
+
+@test "omits --api-url when MDEV_API_URL unset" {
+  run_script
+  assert_success
+  refute_output --partial "--api-url"
+  ! grep -q -- "--api-url" "$FAKE_MAESTRO_ARGS_FILE"
+}
+
+@test "passes --api-url when MDEV_API_URL set" {
+  export MDEV_API_URL="https://example.com"
+  run_script
+  assert_success
+  assert_args_contain "--api-url https://example.com"
+}
+
+@test "passes branch, commit-sha, repo, pr id" {
+  export MDEV_BRANCH="feat/x"
+  export MDEV_COMMIT_SHA="deadbeef"
+  export MDEV_REPO_OWNER="acme"
+  export MDEV_REPO_NAME="widgets"
+  export MDEV_PR_ID="42"
+  run_script
+  assert_success
+  assert_args_contain "--branch feat/x"
+  assert_args_contain "--commit-sha deadbeef"
+  assert_args_contain "--repoOwner acme"
+  assert_args_contain "--repoName widgets"
+  assert_args_contain "--pullRequestId 42"
+}
+
+@test "passes mapping, device knobs, tags, timeout, name" {
+  export MDEV_MAPPING_FILE="map.txt"
+  export MDEV_DEVICE_OS="iOS-18-2"
+  export MDEV_DEVICE_LOCALE="de_DE"
+  export MDEV_DEVICE_MODEL="iPhone-11"
+  export MDEV_INCLUDE_TAGS="dev,smoke"
+  export MDEV_EXCLUDE_TAGS="flaky"
+  export MDEV_TIMEOUT="90"
+  export MDEV_NAME="Run name"
+  run_script
+  assert_success
+  assert_args_contain "--mapping map.txt"
+  assert_args_contain "--device-os iOS-18-2"
+  assert_args_contain "--device-locale de_DE"
+  assert_args_contain "--device-model iPhone-11"
+  assert_args_contain "--include-tags dev,smoke"
+  assert_args_contain "--exclude-tags flaky"
+  assert_args_contain "--timeout 90"
+  assert_args_contain "--name Run name"
+}
+
+@test "deprecated --android-api-level and --ios-version still pass" {
+  export MDEV_ANDROID_API_LEVEL="29"
+  export MDEV_IOS_VERSION="17"
+  run_script
+  assert_success
+  assert_args_contain "--android-api-level 29"
+  assert_args_contain "--ios-version 17"
+}
+
+@test "--async flag added when MDEV_ASYNC=true; omitted otherwise" {
+  export MDEV_ASYNC="true"
+  run_script
+  assert_args_contain "--async"
+
+  unset MDEV_ASYNC
+  : > "$FAKE_MAESTRO_ARGS_FILE"
+  run_script
+  refute_output --partial "--async"
+  ! grep -q -- "--async" "$FAKE_MAESTRO_ARGS_FILE"
+}
+
+@test "uses MDEV_APP_BINARY_ID when MDEV_APP_FILE empty" {
+  unset MDEV_APP_FILE
+  export MDEV_APP_BINARY_ID="bin_x"
+  run_script
+  assert_success
+  assert_args_contain "--app-binary-id bin_x"
+  refute_output --partial "--app-file"
+  ! grep -q -- "--app-file" "$FAKE_MAESTRO_ARGS_FILE"
+}
+
+@test "defaults --flows to .maestro when MDEV_WORKSPACE empty" {
+  unset MDEV_WORKSPACE
+  run_script
+  assert_args_contain "--flows .maestro"
+}

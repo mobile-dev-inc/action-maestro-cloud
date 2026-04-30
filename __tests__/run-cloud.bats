@@ -222,3 +222,39 @@ assert_args_contain() {
   run_script
   assert_failure 1
 }
+
+@test "passes --format junit and --output to the CLI" {
+  run_script
+  assert_success
+  assert_args_contain "--format junit"
+  assert_args_contain "--output"
+}
+
+# NOTE: @actions/core.setOutput uses GitHub's heredoc framing in $GITHUB_OUTPUT
+#   NAME<<delimiter
+#   value
+#   delimiter
+# These tests verify the JSON content rather than the surrounding framing.
+
+@test "writes MAESTRO_CLOUD_FLOW_RESULTS as JSON for default (all-pass) mode" {
+  run_script
+  assert_success
+  grep -q "MAESTRO_CLOUD_FLOW_RESULTS<<" "$GITHUB_OUTPUT"
+  grep -qF '"name":"login","status":"SUCCESS","errors":[]' "$GITHUB_OUTPUT"
+  grep -qF '"name":"checkout","status":"SUCCESS","errors":[]' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_FLOW_RESULTS captures failure messages" {
+  export FAKE_MAESTRO_MODE="flow-failure"
+  run_script
+  assert_failure 1
+  grep -qF '"name":"checkout","status":"ERROR","errors":["Element not found"]' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_FLOW_RESULTS is empty array when no junit produced" {
+  export FAKE_MAESTRO_MODE="fail"  # exits before writing junit
+  run_script
+  assert_failure 1
+  grep -q "MAESTRO_CLOUD_FLOW_RESULTS<<" "$GITHUB_OUTPUT"
+  grep -qFx '[]' "$GITHUB_OUTPUT"
+}

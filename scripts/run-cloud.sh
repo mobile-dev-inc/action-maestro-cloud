@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Resolve the action root (one level up from scripts/) so we can locate
+# dist/postprocess.js regardless of where the script is invoked from.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ACTION_DIR="$(dirname "$SCRIPT_DIR")"
+
 env_args=()
 if [ -n "$MDEV_ENV" ]; then
   while IFS= read -r line; do
@@ -7,6 +12,10 @@ if [ -n "$MDEV_ENV" ]; then
     env_args+=("-e" "$line")
   done <<< "$MDEV_ENV"
 fi
+
+# JUnit XML is produced unconditionally so we can reconstruct
+# MAESTRO_CLOUD_FLOW_RESULTS. The CLI doesn't expose a JSON format.
+JUNIT_FILE=$(mktemp -t maestro-junit.XXXXXX) || { echo "::error::failed to create temp junit file"; exit 1; }
 
 CLOUD_COMMAND=(maestro cloud
   --apiKey "$MDEV_API_KEY"
@@ -30,12 +39,14 @@ CLOUD_COMMAND=(maestro cloud
   ${MDEV_ASYNC:+--async}
   ${MDEV_ANDROID_API_LEVEL:+--android-api-level "$MDEV_ANDROID_API_LEVEL"}
   ${MDEV_IOS_VERSION:+--ios-version "$MDEV_IOS_VERSION"}
+  --format junit
+  --output "$JUNIT_FILE"
   "${env_args[@]+"${env_args[@]}"}"
   --flows "${MDEV_WORKSPACE:-.maestro}"
 )
 
 OUTPUT_FILE=$(mktemp) || { echo "::error::failed to create temp file for CLI output"; exit 1; }
-trap 'rm -f "$OUTPUT_FILE"' EXIT
+trap 'rm -f "$OUTPUT_FILE" "$JUNIT_FILE"' EXIT
 
 "${CLOUD_COMMAND[@]}" | tee "$OUTPUT_FILE"
 EXIT_CODE=${PIPESTATUS[0]}
@@ -60,5 +71,10 @@ fi
 
 [ -n "$APP_BINARY_ID" ] && echo "MAESTRO_CLOUD_APP_BINARY_ID=$APP_BINARY_ID" >> "$GITHUB_OUTPUT"
 [ -n "$CONSOLE_URL" ] && echo "MAESTRO_CLOUD_CONSOLE_URL=$CONSOLE_URL" >> "$GITHUB_OUTPUT"
+
+# Reconstruct MAESTRO_CLOUD_FLOW_RESULTS from the junit XML.
+# Always invoked — postprocess emits an empty array if the junit file is
+# missing (e.g. async upload, or CLI failed before the report was written).
+node "${ACTION_DIR}/dist/postprocess.js" "$JUNIT_FILE"
 
 exit "$EXIT_CODE"

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && ncc build prelude.ts -o dist && mv dist/index.js dist/prelude.js",
+    "build": "rm -rf dist && ncc build prelude.ts -o dist/_p && mv dist/_p/index.js dist/prelude.js && ncc build postprocess.ts -o dist/_q && mv dist/_q/index.js dist/postprocess.js && rm -rf dist/_p dist/_q",
     "release": "./_release.sh",
     "test": "jest",
     "test:watch": "jest --watch",

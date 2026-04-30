@@ -63,6 +63,16 @@ inputs:
   maestro-cli-version:
     description: "Pin a specific Maestro CLI version (defaults to latest)"
     required: false
+outputs:
+  MAESTRO_CLOUD_APP_BINARY_ID:
+    description: "ID of the binary uploaded to Maestro Cloud"
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+  MAESTRO_CLOUD_CONSOLE_URL:
+    description: "Link to the Maestro Cloud console for this upload"
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_CONSOLE_URL }}
+  MAESTRO_CLOUD_FLOW_RESULTS:
+    description: "JSON array of per-flow results (name, status, errors). Empty when --async or no junit report was produced."
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}
 runs:
   using: composite
   steps:
@@ -100,6 +110,7 @@ runs:
       run: node "${{ github.action_path }}/dist/prelude.js"
 
     - name: Run maestro cloud
+      id: run
       shell: bash
       env:
         MDEV_CI: github

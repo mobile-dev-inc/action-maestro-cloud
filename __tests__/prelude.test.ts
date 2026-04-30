@@ -351,3 +351,51 @@ describe('env parsing', () => {
     expect(failures[0]).toMatch(/Invalid env parameter: NOEQUALS/)
   })
 })
+
+describe('tag passthrough', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('forwards include-tags verbatim', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', 'include-tags': 'dev,smoke' })
+    await main()
+    expect(exportedVars.MDEV_INCLUDE_TAGS).toBe('dev,smoke')
+  })
+
+  it('forwards exclude-tags verbatim', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', 'exclude-tags': 'flaky' })
+    await main()
+    expect(exportedVars.MDEV_EXCLUDE_TAGS).toBe('flaky')
+  })
+
+  it('writes empty string when tags not set', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(exportedVars.MDEV_INCLUDE_TAGS ?? '').toBe('')
+    expect(exportedVars.MDEV_EXCLUDE_TAGS ?? '').toBe('')
+  })
+})

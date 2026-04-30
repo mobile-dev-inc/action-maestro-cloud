@@ -78,6 +78,8 @@ export async function main(): Promise<void> {
     const envLines = core.getMultilineInput('env')
     const envSerialized = parseEnv(envLines)
     core.exportVariable('MDEV_ENV', envSerialized)
+    core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
+    core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
   } catch (e: any) {
     core.setFailed(e.message)
   }

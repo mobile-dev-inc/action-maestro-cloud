@@ -80,6 +80,22 @@ export async function main(): Promise<void> {
     core.exportVariable('MDEV_ENV', envSerialized)
     core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
     core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
+    const androidApiLevel = core.getInput('android-api-level')
+    if (androidApiLevel) {
+      core.warning(
+        "'android-api-level' is deprecated and will be removed in a future release. " +
+          "Use 'device-os' instead (e.g. device-os: android-33)."
+      )
+      core.exportVariable('MDEV_ANDROID_API_LEVEL', androidApiLevel)
+    }
+    const iosVersion = core.getInput('ios-version')
+    if (iosVersion) {
+      core.warning(
+        "'ios-version' is deprecated and will be removed in a future release. " +
+          "Use 'device-os' instead (e.g. device-os: iOS-18-2)."
+      )
+      core.exportVariable('MDEV_IOS_VERSION', iosVersion)
+    }
   } catch (e: any) {
     core.setFailed(e.message)
   }

@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "ncc build prelude.ts -o dist && mv dist/index.js dist/prelude.js",
+    "build": "rm -rf dist && ncc build prelude.ts -o dist && mv dist/index.js dist/prelude.js",
     "release": "./_release.sh",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:bats": "BATS_LIB_PATH=$(npm root -g) bats __tests__/run-cloud.bats"
   },
   "repository": {
     "type": "git",

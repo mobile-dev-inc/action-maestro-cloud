@@ -65,21 +65,31 @@ export function parseEnv(lines: string[]): string {
 
 export async function main(): Promise<void> {
   try {
+    // 1. Branch + name
     const branchInput = core.getInput('branch') || undefined
     const branch = getBranchName(branchInput)
     core.exportVariable('MDEV_BRANCH', branch)
+
     const nameInput = core.getInput('name')
     const name = nameInput || getInferredName()
     core.exportVariable('MDEV_NAME', name)
+
+    // 2. App + device + validation
     const appFile = core.getInput('app-file')
     const appBinaryId = core.getInput('app-binary-id')
     const deviceOs = core.getInput('device-os')
     validateAppInputs(appFile, appBinaryId, deviceOs)
+
+    // 3. Env multiline
     const envLines = core.getMultilineInput('env')
     const envSerialized = parseEnv(envLines)
     core.exportVariable('MDEV_ENV', envSerialized)
+
+    // 4. Tag passthrough
     core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
     core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
+
+    // 5. Deprecation warnings
     const androidApiLevel = core.getInput('android-api-level')
     if (androidApiLevel) {
       core.warning(
@@ -95,6 +105,45 @@ export async function main(): Promise<void> {
           "Use 'device-os' instead (e.g. device-os: iOS-18-2)."
       )
       core.exportVariable('MDEV_IOS_VERSION', iosVersion)
+    }
+
+    // 6. Required + optional primitives
+    core.exportVariable('MDEV_API_KEY', core.getInput('api-key'))
+    core.exportVariable('MDEV_PROJECT_ID', core.getInput('project-id'))
+    const apiUrl = core.getInput('api-url')
+    if (apiUrl) core.exportVariable('MDEV_API_URL', apiUrl)
+
+    // 7. Files
+    if (appFile) core.exportVariable('MDEV_APP_FILE', appFile)
+    if (appBinaryId) core.exportVariable('MDEV_APP_BINARY_ID', appBinaryId)
+    const mappingFile = core.getInput('mapping-file')
+    if (mappingFile) core.exportVariable('MDEV_MAPPING_FILE', mappingFile)
+
+    // 8. Device knobs
+    if (deviceOs) core.exportVariable('MDEV_DEVICE_OS', deviceOs)
+    const deviceLocale = core.getInput('device-locale')
+    if (deviceLocale) core.exportVariable('MDEV_DEVICE_LOCALE', deviceLocale)
+    const deviceModel = core.getInput('device-model')
+    if (deviceModel) core.exportVariable('MDEV_DEVICE_MODEL', deviceModel)
+
+    // 9. Async + timeout + workspace
+    const async = core.getInput('async')
+    if (async === 'true') core.exportVariable('MDEV_ASYNC', 'true')
+    const timeout = core.getInput('timeout')
+    if (timeout) core.exportVariable('MDEV_TIMEOUT', timeout)
+    const workspace = core.getInput('workspace')
+    if (workspace) core.exportVariable('MDEV_WORKSPACE', workspace)
+
+    // 10. GitHub context metadata
+    const ctx = github.context
+    core.exportVariable('MDEV_REPO_OWNER', ctx.repo.owner)
+    core.exportVariable('MDEV_REPO_NAME', ctx.repo.repo)
+    const pr = ctx.payload.pull_request as any
+    if (pr?.number !== undefined) {
+      core.exportVariable('MDEV_PR_ID', String(pr.number))
+    }
+    if (pr?.head?.sha) {
+      core.exportVariable('MDEV_COMMIT_SHA', String(pr.head.sha))
     }
   } catch (e: any) {
     core.setFailed(e.message)

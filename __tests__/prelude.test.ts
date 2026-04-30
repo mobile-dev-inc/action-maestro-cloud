@@ -448,3 +448,118 @@ describe('deprecation warnings', () => {
     expect(warnings).toEqual([])
   })
 })
+
+describe('remaining MDEV exports', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('forwards api/project/name primitives', async () => {
+    setInputs({
+      'api-key': 'rb_xyz',
+      'project-id': 'proj_abc',
+      'api-url': 'https://example.com',
+      'app-file': 'a.apk',
+    })
+    await main()
+    expect(exportedVars.MDEV_API_KEY).toBe('rb_xyz')
+    expect(exportedVars.MDEV_PROJECT_ID).toBe('proj_abc')
+    expect(exportedVars.MDEV_API_URL).toBe('https://example.com')
+  })
+
+  it('forwards files', async () => {
+    setInputs({
+      ...required,
+      'app-file': 'app.apk',
+      'mapping-file': 'mapping.txt',
+    })
+    await main()
+    expect(exportedVars.MDEV_APP_FILE).toBe('app.apk')
+    expect(exportedVars.MDEV_MAPPING_FILE).toBe('mapping.txt')
+  })
+
+  it('forwards device knobs', async () => {
+    setInputs({
+      ...required,
+      'app-file': 'a.apk',
+      'device-os': 'iOS-18-2',
+      'device-locale': 'de_DE',
+      'device-model': 'iPhone-11',
+    })
+    await main()
+    expect(exportedVars.MDEV_DEVICE_OS).toBe('iOS-18-2')
+    expect(exportedVars.MDEV_DEVICE_LOCALE).toBe('de_DE')
+    expect(exportedVars.MDEV_DEVICE_MODEL).toBe('iPhone-11')
+  })
+
+  it('forwards async true; omits when false-y', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', async: 'true' })
+    await main()
+    expect(exportedVars.MDEV_ASYNC).toBe('true')
+  })
+
+  it('does not set MDEV_ASYNC when async is false', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', async: 'false' })
+    await main()
+    expect(exportedVars.MDEV_ASYNC ?? '').toBe('')
+  })
+
+  it('forwards timeout and workspace', async () => {
+    setInputs({
+      ...required,
+      'app-file': 'a.apk',
+      timeout: '90',
+      workspace: 'flows/',
+    })
+    await main()
+    expect(exportedVars.MDEV_TIMEOUT).toBe('90')
+    expect(exportedVars.MDEV_WORKSPACE).toBe('flows/')
+  })
+
+  it('forwards repo metadata from github.context', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(exportedVars.MDEV_REPO_OWNER).toBe('mobile-dev-inc')
+    expect(exportedVars.MDEV_REPO_NAME).toBe('action-maestro-cloud')
+  })
+
+  it('forwards PR id and commit SHA when PR event', async () => {
+    ;(github as any).context.payload = {
+      pull_request: { number: 42, head: { ref: 'feat', sha: 'shashashash' } },
+    }
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(exportedVars.MDEV_PR_ID).toBe('42')
+    expect(exportedVars.MDEV_COMMIT_SHA).toBe('shashashash')
+  })
+
+  it('omits PR id and commit SHA on push', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(exportedVars.MDEV_PR_ID ?? '').toBe('')
+    expect(exportedVars.MDEV_COMMIT_SHA ?? '').toBe('')
+  })
+})

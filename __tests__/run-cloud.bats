@@ -198,3 +198,27 @@ assert_args_contain() {
   assert_success
   grep -q "^MAESTRO_CLOUD_CONSOLE_URL=https://app.maestro.dev/" "$GITHUB_OUTPUT"
 }
+
+@test "parses ANSI-wrapped APP_BINARY_ID and CONSOLE_URL" {
+  export FAKE_MAESTRO_MODE="ansi"
+  run_script
+  assert_success
+  grep -q "^MAESTRO_CLOUD_APP_BINARY_ID=app_abc123$" "$GITHUB_OUTPUT"
+  grep -q "^MAESTRO_CLOUD_CONSOLE_URL=https://app.maestro.dev/" "$GITHUB_OUTPUT"
+  ! grep -q $'\033' "$GITHUB_OUTPUT"
+}
+
+@test "falls back to MDEV_APP_BINARY_ID when CLI does not echo it" {
+  unset MDEV_APP_FILE
+  export MDEV_APP_BINARY_ID="bin_user_supplied"
+  export FAKE_MAESTRO_MODE="no-binary-id"
+  run_script
+  assert_success
+  grep -q "^MAESTRO_CLOUD_APP_BINARY_ID=bin_user_supplied$" "$GITHUB_OUTPUT"
+}
+
+@test "exits with CLI exit code; outputs still written on failure" {
+  export FAKE_MAESTRO_MODE="fail"
+  run_script
+  assert_failure 1
+}

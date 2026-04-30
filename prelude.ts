@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { PushEvent } from '@octokit/webhooks-definitions/schema'
 
 export function getBranchName(branchInput?: string): string {
   if (branchInput && branchInput.trim() !== '') {
@@ -24,11 +25,26 @@ export function getBranchName(branchInput?: string): string {
   return result[2]
 }
 
+export function getInferredName(): string {
+  const ctx = github.context
+  const prTitle = ctx.payload.pull_request?.title
+  if (prTitle) return String(prTitle)
+  if (ctx.eventName === 'push') {
+    const pushPayload = ctx.payload as PushEvent
+    const commitMessage = pushPayload.head_commit?.message
+    if (commitMessage) return commitMessage
+  }
+  return ctx.sha
+}
+
 export async function main(): Promise<void> {
   try {
     const branchInput = core.getInput('branch') || undefined
     const branch = getBranchName(branchInput)
     core.exportVariable('MDEV_BRANCH', branch)
+    const nameInput = core.getInput('name')
+    const name = nameInput || getInferredName()
+    core.exportVariable('MDEV_NAME', name)
   } catch (e: any) {
     core.setFailed(e.message)
   }

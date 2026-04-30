@@ -158,3 +158,66 @@ describe('branch resolution', () => {
     expect(exportedVars.MDEV_BRANCH).toBe('override')
   })
 })
+
+describe('name resolution', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('uses explicit name input when provided', async () => {
+    setInputs({ ...required, 'app-file': 'app.apk', name: 'My Run' })
+    await main()
+    expect(exportedVars.MDEV_NAME).toBe('My Run')
+  })
+
+  it('falls back to PR title', async () => {
+    ;(github as any).context.payload = {
+      pull_request: { title: 'PR title here', head: { ref: 'b', sha: 's' } },
+    }
+    setInputs({ ...required, 'app-file': 'app.apk' })
+    await main()
+    expect(exportedVars.MDEV_NAME).toBe('PR title here')
+  })
+
+  it('falls back to push commit message', async () => {
+    ;(github as any).context.eventName = 'push'
+    ;(github as any).context.payload = {
+      head_commit: { message: 'commit subject' },
+    }
+    setInputs({ ...required, 'app-file': 'app.apk' })
+    await main()
+    expect(exportedVars.MDEV_NAME).toBe('commit subject')
+  })
+
+  it('falls back to SHA when no other source', async () => {
+    ;(github as any).context.eventName = 'push'
+    ;(github as any).context.payload = {}
+    ;(github as any).context.sha = 'deadbeef'
+    setInputs({ ...required, 'app-file': 'app.apk' })
+    await main()
+    expect(exportedVars.MDEV_NAME).toBe('deadbeef')
+  })
+})

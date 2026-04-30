@@ -34,4 +34,22 @@ CLOUD_COMMAND=(maestro cloud
   --flows "${MDEV_WORKSPACE:-.maestro}"
 )
 
-"${CLOUD_COMMAND[@]}"
+OUTPUT_FILE=$(mktemp)
+"${CLOUD_COMMAND[@]}" | tee "$OUTPUT_FILE"
+EXIT_CODE=${PIPESTATUS[0]}
+
+CLEANED=$(sed -E 's/\x1b\[[0-9;]*m//g' "$OUTPUT_FILE")
+
+APP_BINARY_ID=$(echo "$CLEANED" | grep -oE "App binary id: \S+" | awk '{print $NF}' | head -n 1)
+CONSOLE_URL=$(echo "$CLEANED" | grep -oE "https://app\.maestro\.dev/\S+" | head -n 1)
+
+# CLI does not echo --app-binary-id when user supplied it; pass through.
+if [ -z "$APP_BINARY_ID" ] && [ -n "$MDEV_APP_BINARY_ID" ]; then
+  APP_BINARY_ID="$MDEV_APP_BINARY_ID"
+fi
+
+[ -n "$APP_BINARY_ID" ] && echo "MAESTRO_CLOUD_APP_BINARY_ID=$APP_BINARY_ID" >> "$GITHUB_OUTPUT"
+[ -n "$CONSOLE_URL" ] && echo "MAESTRO_CLOUD_CONSOLE_URL=$CONSOLE_URL" >> "$GITHUB_OUTPUT"
+
+rm -f "$OUTPUT_FILE"
+exit "$EXIT_CODE"

@@ -186,3 +186,15 @@ assert_args_contain() {
   assert_success
   ! grep -q -- "-e " "$FAKE_MAESTRO_ARGS_FILE"
 }
+
+@test "writes MAESTRO_CLOUD_APP_BINARY_ID from clean stdout" {
+  run_script
+  assert_success
+  grep -q "^MAESTRO_CLOUD_APP_BINARY_ID=app_abc123$" "$GITHUB_OUTPUT"
+}
+
+@test "writes MAESTRO_CLOUD_CONSOLE_URL from clean stdout" {
+  run_script
+  assert_success
+  grep -q "^MAESTRO_CLOUD_CONSOLE_URL=https://app.maestro.dev/" "$GITHUB_OUTPUT"
+}

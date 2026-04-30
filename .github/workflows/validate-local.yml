@@ -26,6 +26,7 @@ jobs:
         run: maestro download-samples
 
       - name: Run Android test
+        id: android
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
@@ -33,6 +34,13 @@ jobs:
           app-file: samples/wikipedia.apk
           workspace: samples
           include-tags: advanced
+
+      - name: Verify Android outputs
+        if: always()
+        run: |
+          echo "MAESTRO_CLOUD_APP_BINARY_ID=${{ steps.android.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
+          echo "MAESTRO_CLOUD_CONSOLE_URL=${{ steps.android.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
+          echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.android.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
 
       - name: Run iOS test
         uses: ./

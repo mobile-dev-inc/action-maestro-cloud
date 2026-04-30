@@ -59,3 +59,13 @@ assert_args_contain() {
   run_script
   assert_success
 }
+
+@test "required args: api-key, project-id, app-file, flows" {
+  run_script
+  assert_success
+  assert_args_contain "--apiKey rb_123"
+  assert_args_contain "--project-id proj_123"
+  assert_args_contain "--app-file app.apk"
+  assert_args_contain "--flows flows"
+  refute_output --partial "stub"
+}

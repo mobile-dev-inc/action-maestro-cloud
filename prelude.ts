@@ -37,7 +37,7 @@ export function getInferredName(): string {
   return ctx.sha
 }
 
-export function validateAppInputs(
+function validateAppInputs(
   appFile: string,
   appBinaryId: string,
   deviceOs: string
@@ -52,7 +52,7 @@ export function validateAppInputs(
   }
 }
 
-export function parseEnv(lines: string[]): string {
+function parseEnv(lines: string[]): string {
   const validated = lines.map((line) => {
     const parts = line.split('=')
     if (parts.length < 2) {
@@ -65,7 +65,13 @@ export function parseEnv(lines: string[]): string {
 
 export async function main(): Promise<void> {
   try {
-    // 1. Branch + name
+    // 1. Required primitives + api-url
+    core.exportVariable('MDEV_API_KEY', core.getInput('api-key'))
+    core.exportVariable('MDEV_PROJECT_ID', core.getInput('project-id'))
+    const apiUrl = core.getInput('api-url')
+    if (apiUrl) core.exportVariable('MDEV_API_URL', apiUrl)
+
+    // 2. Branch + name
     const branchInput = core.getInput('branch') || undefined
     const branch = getBranchName(branchInput)
     core.exportVariable('MDEV_BRANCH', branch)
@@ -74,22 +80,24 @@ export async function main(): Promise<void> {
     const name = nameInput || getInferredName()
     core.exportVariable('MDEV_NAME', name)
 
-    // 2. App + device + validation
+    // 3. App + device inputs + validation
     const appFile = core.getInput('app-file')
     const appBinaryId = core.getInput('app-binary-id')
     const deviceOs = core.getInput('device-os')
+    const deviceLocale = core.getInput('device-locale')
+    const deviceModel = core.getInput('device-model')
     validateAppInputs(appFile, appBinaryId, deviceOs)
 
-    // 3. Env multiline
+    // 4. Env multiline
     const envLines = core.getMultilineInput('env')
     const envSerialized = parseEnv(envLines)
     core.exportVariable('MDEV_ENV', envSerialized)
 
-    // 4. Tag passthrough
+    // 5. Tag passthrough
     core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
     core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
 
-    // 5. Deprecation warnings
+    // 6. Deprecation warnings
     const androidApiLevel = core.getInput('android-api-level')
     if (androidApiLevel) {
       core.warning(
@@ -107,23 +115,15 @@ export async function main(): Promise<void> {
       core.exportVariable('MDEV_IOS_VERSION', iosVersion)
     }
 
-    // 6. Required + optional primitives
-    core.exportVariable('MDEV_API_KEY', core.getInput('api-key'))
-    core.exportVariable('MDEV_PROJECT_ID', core.getInput('project-id'))
-    const apiUrl = core.getInput('api-url')
-    if (apiUrl) core.exportVariable('MDEV_API_URL', apiUrl)
-
     // 7. Files
     if (appFile) core.exportVariable('MDEV_APP_FILE', appFile)
     if (appBinaryId) core.exportVariable('MDEV_APP_BINARY_ID', appBinaryId)
     const mappingFile = core.getInput('mapping-file')
     if (mappingFile) core.exportVariable('MDEV_MAPPING_FILE', mappingFile)
 
-    // 8. Device knobs
+    // 8. Device knobs (inputs already read in section 3)
     if (deviceOs) core.exportVariable('MDEV_DEVICE_OS', deviceOs)
-    const deviceLocale = core.getInput('device-locale')
     if (deviceLocale) core.exportVariable('MDEV_DEVICE_LOCALE', deviceLocale)
-    const deviceModel = core.getInput('device-model')
     if (deviceModel) core.exportVariable('MDEV_DEVICE_MODEL', deviceModel)
 
     // 9. Async + timeout + workspace

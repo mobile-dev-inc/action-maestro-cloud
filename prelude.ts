@@ -52,6 +52,17 @@ export function validateAppInputs(
   }
 }
 
+export function parseEnv(lines: string[]): string {
+  const validated = lines.map((line) => {
+    const parts = line.split('=')
+    if (parts.length < 2) {
+      throw new Error(`Invalid env parameter: ${line}`)
+    }
+    return line
+  })
+  return validated.join('\n')
+}
+
 export async function main(): Promise<void> {
   try {
     const branchInput = core.getInput('branch') || undefined
@@ -64,6 +75,9 @@ export async function main(): Promise<void> {
     const appBinaryId = core.getInput('app-binary-id')
     const deviceOs = core.getInput('device-os')
     validateAppInputs(appFile, appBinaryId, deviceOs)
+    const envLines = core.getMultilineInput('env')
+    const envSerialized = parseEnv(envLines)
+    core.exportVariable('MDEV_ENV', envSerialized)
   } catch (e: any) {
     core.setFailed(e.message)
   }

@@ -292,3 +292,62 @@ describe('input validation', () => {
     expect(failures).toEqual([])
   })
 })
+
+describe('env parsing', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('writes empty string when env not set', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    expect(exportedVars.MDEV_ENV ?? '').toBe('')
+  })
+
+  it('parses single KEY=VAL', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', env: 'FOO=bar' })
+    await main()
+    expect(exportedVars.MDEV_ENV).toBe('FOO=bar')
+  })
+
+  it('parses multiple lines', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', env: 'A=1\nB=2' })
+    await main()
+    expect(exportedVars.MDEV_ENV).toBe('A=1\nB=2')
+  })
+
+  it('preserves "=" in values', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', env: 'TOKEN=foo=bar=baz' })
+    await main()
+    expect(exportedVars.MDEV_ENV).toBe('TOKEN=foo=bar=baz')
+  })
+
+  it('fails on malformed line (no equals)', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk', env: 'NOEQUALS' })
+    await main()
+    expect(failures[0]).toMatch(/Invalid env parameter: NOEQUALS/)
+  })
+})

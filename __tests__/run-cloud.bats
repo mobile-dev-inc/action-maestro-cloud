@@ -156,3 +156,33 @@ assert_args_contain() {
   run_script
   assert_args_contain "--flows .maestro"
 }
+
+@test "MDEV_ENV single line becomes -e KEY=VAL" {
+  export MDEV_ENV="FOO=bar"
+  run_script
+  assert_success
+  assert_args_contain "-e FOO=bar"
+}
+
+@test "MDEV_ENV multiple lines become repeated -e args" {
+  export MDEV_ENV=$'A=1\nB=2\nC=3'
+  run_script
+  assert_success
+  assert_args_contain "-e A=1"
+  assert_args_contain "-e B=2"
+  assert_args_contain "-e C=3"
+}
+
+@test "MDEV_ENV preserves equals in value" {
+  export MDEV_ENV="TOKEN=foo=bar=baz"
+  run_script
+  assert_success
+  assert_args_contain "-e TOKEN=foo=bar=baz"
+}
+
+@test "MDEV_ENV empty does not add -e" {
+  export MDEV_ENV=""
+  run_script
+  assert_success
+  ! grep -q -- "-e " "$FAKE_MAESTRO_ARGS_FILE"
+}

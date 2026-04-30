@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+env_args=()
+if [ -n "$MDEV_ENV" ]; then
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    env_args+=("-e" "$line")
+  done <<< "$MDEV_ENV"
+fi
+
 CLOUD_COMMAND=(maestro cloud
   --apiKey "$MDEV_API_KEY"
   --project-id "$MDEV_PROJECT_ID"
@@ -22,6 +30,7 @@ CLOUD_COMMAND=(maestro cloud
   ${MDEV_ASYNC:+--async}
   ${MDEV_ANDROID_API_LEVEL:+--android-api-level "$MDEV_ANDROID_API_LEVEL"}
   ${MDEV_IOS_VERSION:+--ios-version "$MDEV_IOS_VERSION"}
+  "${env_args[@]+"${env_args[@]}"}"
   --flows "${MDEV_WORKSPACE:-.maestro}"
 )
 

@@ -5,26 +5,29 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - uses: actions/checkout@v6
-      
+
       - name: Install JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: "zulu"
           java-version: 17
 
-      - name: Install Maestro
+      - name: Install Maestro (for download-samples)
         run: |
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
           echo -n "e2e" > ${HOME}/.maestro/uuid
 
       - name: Download samples
-        run: |
-          maestro download-samples
+        run: maestro download-samples
 
       - name: Run Android test
         uses: ./
@@ -34,7 +37,7 @@ jobs:
           app-file: samples/wikipedia.apk
           workspace: samples
           include-tags: advanced
-        
+
       - name: Run iOS test
         uses: ./
         with:

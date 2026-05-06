@@ -1,5 +1,11 @@
 name: Plugin Validation (Local)
 
+# Manually-dispatched smoke test that exercises this branch's copy of the
+# action (`uses: ./`) against the real Maestro Cloud backend. Run it before
+# tagging a release to catch regressions that mocked tests can't see — CLI
+# install, GitHub Actions wiring, runner portability, and end-to-end output
+# propagation. Triggered from the Actions tab on the working branch.
+
 on:
   workflow_dispatch:
 

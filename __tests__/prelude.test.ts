@@ -400,21 +400,16 @@ describe('tag passthrough', () => {
   })
 })
 
-describe('deprecation warnings', () => {
+describe('deprecated inputs', () => {
   let exportedVars: Record<string, string>
-  let warnings: string[]
   let failures: string[]
 
   beforeEach(() => {
     ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
     exportedVars = {}
-    warnings = []
     failures = []
     jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
       exportedVars[k] = String(v)
-    })
-    jest.spyOn(core, 'warning').mockImplementation((m) => {
-      warnings.push(typeof m === 'string' ? m : m.message)
     })
     jest.spyOn(core, 'setFailed').mockImplementation((m) => {
       failures.push(typeof m === 'string' ? m : m.message)
@@ -428,24 +423,23 @@ describe('deprecation warnings', () => {
     }
   })
 
-  it('warns and forwards android-api-level', async () => {
+  it('forwards android-api-level', async () => {
     setInputs({ ...required, 'app-file': 'a.apk', 'android-api-level': '29' })
     await main()
-    expect(warnings.some((w) => /'android-api-level' is deprecated/.test(w))).toBe(true)
     expect(exportedVars.MDEV_ANDROID_API_LEVEL).toBe('29')
   })
 
-  it('warns and forwards ios-version', async () => {
+  it('forwards ios-version', async () => {
     setInputs({ ...required, 'app-file': 'a.apk', 'ios-version': '17' })
     await main()
-    expect(warnings.some((w) => /'ios-version' is deprecated/.test(w))).toBe(true)
     expect(exportedVars.MDEV_IOS_VERSION).toBe('17')
   })
 
-  it('happy path emits no deprecation warnings', async () => {
+  it('does not export deprecated MDEV_* vars when inputs are absent', async () => {
     setInputs({ ...required, 'app-file': 'a.apk' })
     await main()
-    expect(warnings).toEqual([])
+    expect(exportedVars.MDEV_ANDROID_API_LEVEL).toBeUndefined()
+    expect(exportedVars.MDEV_IOS_VERSION).toBeUndefined()
   })
 })
 

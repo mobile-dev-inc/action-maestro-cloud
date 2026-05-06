@@ -32,11 +32,11 @@ inputs:
     description: "Whether to run Upload in async fashion and not block until completed"
     required: false
   android-api-level:
-    description: "[Deprecated] Android API level. Use 'device-os' instead (e.g. android-33)."
+    description: "Android API level (e.g. 33). Prefer 'device-os' (e.g. android-33)."
     required: false
     deprecationMessage: "'android-api-level' is deprecated. Use 'device-os' instead."
   ios-version:
-    description: "[Deprecated] iOS version. Use 'device-os' instead (e.g. iOS-18-2)."
+    description: "iOS version (e.g. 18). Prefer 'device-os' (e.g. iOS-18-2)."
     required: false
     deprecationMessage: "'ios-version' is deprecated. Use 'device-os' instead."
   device-locale:

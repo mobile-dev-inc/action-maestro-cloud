@@ -15,7 +15,8 @@ fi
 
 # JUnit XML is produced unconditionally so we can reconstruct
 # MAESTRO_CLOUD_FLOW_RESULTS. The CLI doesn't expose a JSON format.
-JUNIT_FILE=$(mktemp -t maestro-junit.XXXXXX) || { echo "::error::failed to create temp junit file"; exit 1; }
+# Explicit template (no `-t`) so mktemp behaves the same on BSD (macOS) and GNU.
+JUNIT_FILE=$(mktemp "${TMPDIR:-/tmp}/maestro-junit.XXXXXX") || { echo "::error::failed to create temp junit file"; exit 1; }
 
 CLOUD_COMMAND=(maestro cloud
   --apiKey "$MDEV_API_KEY"
@@ -54,7 +55,10 @@ EXIT_CODE=${PIPESTATUS[0]}
 # Strip ANSI escapes the CLI emits via PrintUtils.cyan() (maestro-cli source:
 # CloudInteractor.kt:402, 419-420). Without this, grep captures the escape
 # sequences and the parsed values contain control characters.
-CLEANED=$(sed -E 's/\x1b\[[0-9;]*m//g' "$OUTPUT_FILE")
+# Use a literal ESC byte (printf '\033') because BSD sed (macOS) does not
+# interpret \x1b — the GNU form silently fails to strip and breaks parsing.
+ESC=$(printf '\033')
+CLEANED=$(sed -E "s/${ESC}\[[0-9;]*m//g" "$OUTPUT_FILE")
 
 # These regexes match the CLI's stdout format in
 # maestro-cli/src/main/java/maestro/cli/cloud/CloudInteractor.kt:402,419-420.

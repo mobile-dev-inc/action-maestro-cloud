@@ -8,6 +8,11 @@ name: Plugin Validation (Local)
 
 on:
   workflow_dispatch:
+    inputs:
+      maestro-cli-version:
+        description: "Maestro CLI version to test against (empty = latest release)"
+        required: false
+        default: ""
 
 jobs:
   validate:
@@ -27,6 +32,10 @@ jobs:
           java-version: 17
 
       - name: Install Maestro (for download-samples)
+        env:
+          # Pin the pre-action install to the same version we're validating
+          # so `maestro download-samples` and the action's CLI agree.
+          MAESTRO_VERSION: ${{ inputs.maestro-cli-version }}
         run: |
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
@@ -46,6 +55,7 @@ jobs:
           app-file: samples/wikipedia.apk
           workspace: samples
           include-tags: advanced
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
 
       - name: Verify Android outputs
         if: always()
@@ -65,6 +75,7 @@ jobs:
           include-tags: advanced
           device-model: pixel_6
           device-os: android-34
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
           env: |
             USERNAME=test_user
             PASSWORD=test_pass
@@ -84,6 +95,7 @@ jobs:
           device-model: iPhone-11
           device-os: iOS-18-2
           timeout: 180
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
 
       - name: Verify iOS outputs
         if: always()
@@ -104,3 +116,4 @@ jobs:
           device-model: iPhone-11
           device-os: iOS-18-2
           timeout: 180
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}

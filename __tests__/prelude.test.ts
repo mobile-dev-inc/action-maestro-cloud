@@ -1,9 +1,23 @@
 // __tests__/prelude.test.ts
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import * as glob from '@actions/glob'
 import { main } from '../prelude'
 
 jest.mock('@actions/github')
+jest.mock('@actions/glob')
+
+// Default glob mock: identity match — returns the input pattern as a single
+// resolved path. Tests that exercise glob behavior override this per-case.
+const mockGlobIdentity = () => {
+  ;(glob.create as jest.Mock).mockImplementation(async (pattern: string) => ({
+    glob: async () => [pattern],
+  }))
+}
+
+// Re-applied before every test (overrides from glob-specific tests would
+// otherwise leak into later cases).
+beforeEach(mockGlobIdentity)
 
 const required = {
   'api-key': 'k',
@@ -555,5 +569,99 @@ describe('remaining MDEV exports', () => {
     await main()
     expect(exportedVars.MDEV_PR_ID ?? '').toBe('')
     expect(exportedVars.MDEV_COMMIT_SHA ?? '').toBe('')
+  })
+})
+
+describe('glob expansion for app-file and mapping-file', () => {
+  let exportedVars: Record<string, string>
+  let warnings: string[]
+  let failures: string[]
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    warnings = []
+    failures = []
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation((m) => {
+      warnings.push(typeof m === 'string' ? m : m.message)
+    })
+    jest.spyOn(core, 'setFailed').mockImplementation((m) => {
+      failures.push(typeof m === 'string' ? m : m.message)
+    })
+  })
+
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('expands a glob pattern to its single matching path', async () => {
+    ;(glob.create as jest.Mock).mockImplementation(async () => ({
+      glob: async () => ['/work/app/build/outputs/apk/debug/app-debug.apk'],
+    }))
+    setInputs({
+      ...required,
+      'app-file': 'app/build/outputs/apk/debug/*.apk',
+    })
+    await main()
+    expect(exportedVars.MDEV_APP_FILE).toBe(
+      '/work/app/build/outputs/apk/debug/app-debug.apk'
+    )
+    expect(failures).toEqual([])
+  })
+
+  it('warns and uses first match when glob matches multiple files', async () => {
+    ;(glob.create as jest.Mock).mockImplementation(async () => ({
+      glob: async () => ['/work/a.apk', '/work/b.apk', '/work/c.apk'],
+    }))
+    setInputs({ ...required, 'app-file': '*.apk' })
+    await main()
+    expect(exportedVars.MDEV_APP_FILE).toBe('/work/a.apk')
+    expect(
+      warnings.some((w) => /matched 3 files/.test(w) && /a\.apk/.test(w))
+    ).toBe(true)
+  })
+
+  it('fails when glob matches no files', async () => {
+    ;(glob.create as jest.Mock).mockImplementation(async () => ({
+      glob: async () => [],
+    }))
+    setInputs({ ...required, 'app-file': 'no-such-file-*.apk' })
+    await main()
+    expect(failures.some((f) => /matched no files/.test(f))).toBe(true)
+    expect(exportedVars.MDEV_APP_FILE).toBeUndefined()
+  })
+
+  it('expands mapping-file too', async () => {
+    ;(glob.create as jest.Mock).mockImplementation(async (pattern: string) => ({
+      // Only the mapping pattern returns the resolved path; app-file uses
+      // the default identity mock.
+      glob: async () =>
+        pattern === '**/mapping.txt'
+          ? ['/work/build/outputs/mapping/release/mapping.txt']
+          : [pattern],
+    }))
+    setInputs({
+      ...required,
+      'app-file': 'a.apk',
+      'mapping-file': '**/mapping.txt',
+    })
+    await main()
+    expect(exportedVars.MDEV_MAPPING_FILE).toBe(
+      '/work/build/outputs/mapping/release/mapping.txt'
+    )
+  })
+
+  it('error message names which input failed', async () => {
+    ;(glob.create as jest.Mock).mockImplementation(async () => ({
+      glob: async () => [],
+    }))
+    setInputs({ ...required, 'app-file': 'missing.apk' })
+    await main()
+    expect(failures.some((f) => /'app-file'/.test(f))).toBe(true)
   })
 })

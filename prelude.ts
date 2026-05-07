@@ -1,6 +1,28 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import * as glob from '@actions/glob'
 import { PushEvent } from '@octokit/webhooks-definitions/schema'
+
+// Resolve a path that may contain glob patterns (e.g. app/build/**/*.apk).
+// Maintains the action's historical behavior: first match wins, multiple
+// matches emit a warning. Throws if the pattern resolves to zero files —
+// failing in prelude with a clear message beats letting the CLI bail later.
+export async function resolveFileGlob(
+  pattern: string,
+  inputName: string
+): Promise<string> {
+  const globber = await glob.create(pattern)
+  const matches = await globber.glob()
+  if (matches.length === 0) {
+    throw new Error(`'${inputName}' matched no files: ${pattern}`)
+  }
+  if (matches.length > 1) {
+    core.warning(
+      `'${inputName}' pattern matched ${matches.length} files; using ${matches[0]}`
+    )
+  }
+  return matches[0]
+}
 
 export function getBranchName(branchInput?: string): string {
   if (branchInput && branchInput.trim() !== '') {
@@ -107,11 +129,18 @@ export async function main(): Promise<void> {
       core.exportVariable('MDEV_IOS_VERSION', iosVersion)
     }
 
-    // 7. Files
-    if (appFile) core.exportVariable('MDEV_APP_FILE', appFile)
+    // 7. Files (with glob expansion to preserve action's historical contract;
+    // the Maestro CLI itself does not expand globs in --app-file / --mapping)
+    if (appFile) {
+      const resolvedAppFile = await resolveFileGlob(appFile, 'app-file')
+      core.exportVariable('MDEV_APP_FILE', resolvedAppFile)
+    }
     if (appBinaryId) core.exportVariable('MDEV_APP_BINARY_ID', appBinaryId)
     const mappingFile = core.getInput('mapping-file')
-    if (mappingFile) core.exportVariable('MDEV_MAPPING_FILE', mappingFile)
+    if (mappingFile) {
+      const resolvedMappingFile = await resolveFileGlob(mappingFile, 'mapping-file')
+      core.exportVariable('MDEV_MAPPING_FILE', resolvedMappingFile)
+    }
 
     // 8. Device knobs (inputs already read in section 3)
     if (deviceOs) core.exportVariable('MDEV_DEVICE_OS', deviceOs)

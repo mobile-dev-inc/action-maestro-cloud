@@ -251,6 +251,21 @@ assert_args_contain() {
   grep -qF '"name":"checkout","status":"ERROR","errors":["Element not found"]' "$GITHUB_OUTPUT"
 }
 
+@test "MAESTRO_CLOUD_FLOW_RESULTS captures <error> infra failures" {
+  export FAKE_MAESTRO_MODE="infra-error"
+  run_script
+  assert_failure 1
+  grep -qF '"name":"login","status":"ERROR","errors":["Device unreachable"]' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_FLOW_RESULTS strips CDATA wrappers" {
+  export FAKE_MAESTRO_MODE="cdata-failure"
+  run_script
+  assert_failure 1
+  grep -qF '"name":"checkout","status":"ERROR","errors":["Element <Button> not found"]' "$GITHUB_OUTPUT"
+  ! grep -qF 'CDATA' "$GITHUB_OUTPUT"
+}
+
 @test "MAESTRO_CLOUD_FLOW_RESULTS is empty array when no junit produced" {
   export FAKE_MAESTRO_MODE="fail"  # exits before writing junit
   run_script

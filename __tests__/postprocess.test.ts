@@ -102,6 +102,63 @@ line3</failure>
     ])
   })
 
+  it('parses <error> tags as infra failures', () => {
+    const xml = `<testsuites><testsuite>
+      <testcase name="login" classname="login" status="ERROR">
+        <error>Device unreachable</error>
+      </testcase>
+    </testsuites></testsuite>`
+    expect(parseJunit(xml)).toEqual([
+      { name: 'login', status: 'ERROR', errors: ['Device unreachable'] },
+    ])
+  })
+
+  it('strips CDATA wrappers from failure messages', () => {
+    const xml = `<testsuites><testsuite>
+      <testcase name="checkout" classname="checkout" status="ERROR">
+        <failure><![CDATA[Element <Button> not found]]></failure>
+      </testcase>
+    </testsuites></testsuite>`
+    expect(parseJunit(xml)).toEqual([
+      {
+        name: 'checkout',
+        status: 'ERROR',
+        errors: ['Element <Button> not found'],
+      },
+    ])
+  })
+
+  it('strips CDATA wrappers from error messages', () => {
+    const xml = `<testsuites><testsuite>
+      <testcase name="login" classname="login" status="ERROR">
+        <error><![CDATA[connection refused: host=10.0.0.1 port=5555]]></error>
+      </testcase>
+    </testsuites></testsuite>`
+    expect(parseJunit(xml)).toEqual([
+      {
+        name: 'login',
+        status: 'ERROR',
+        errors: ['connection refused: host=10.0.0.1 port=5555'],
+      },
+    ])
+  })
+
+  it('captures multiple error elements on a single testcase', () => {
+    const xml = `<testsuites><testsuite>
+      <testcase name="checkout" classname="checkout" status="ERROR">
+        <failure>assertion failed</failure>
+        <error>cleanup hook crashed</error>
+      </testcase>
+    </testsuites></testsuite>`
+    expect(parseJunit(xml)).toEqual([
+      {
+        name: 'checkout',
+        status: 'ERROR',
+        errors: ['assertion failed', 'cleanup hook crashed'],
+      },
+    ])
+  })
+
   it('handles flows from multiple testsuites', () => {
     const xml = `<testsuites>
       <testsuite name="suite1">

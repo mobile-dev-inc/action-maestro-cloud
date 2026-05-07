@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as core from '@actions/core'
+import { XMLParser } from 'fast-xml-parser'
 
 export interface FlowResult {
   name: string
@@ -7,39 +8,43 @@ export interface FlowResult {
   errors: string[]
 }
 
-const ENTITY_DECODE: Record<string, string> = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&apos;': "'",
-  '&#39;': "'",
-}
+const parser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '',
+  cdataPropName: '__cdata',
+  parseAttributeValue: false,
+  trimValues: true,
+  // testsuite/testcase repeat; failure/error can repeat per testcase.
+  // Forcing arrays makes the shape predictable.
+  isArray: (name) =>
+    name === 'testsuite' || name === 'testcase' || name === 'failure' || name === 'error',
+})
 
-function decodeEntities(s: string): string {
-  return s.replace(/&(?:amp|lt|gt|quot|apos|#39);/g, (m) => ENTITY_DECODE[m])
+function extractMessage(node: unknown): string {
+  if (node === null || node === undefined) return ''
+  if (typeof node === 'string') return node.trim()
+  if (typeof node === 'object') {
+    const obj = node as Record<string, unknown>
+    if (typeof obj.__cdata === 'string') return obj.__cdata.trim()
+    if (typeof obj['#text'] === 'string') return (obj['#text'] as string).trim()
+    if (typeof obj.message === 'string') return (obj.message as string).trim()
+  }
+  return ''
 }
 
 export function parseJunit(xml: string): FlowResult[] {
+  const doc = parser.parse(xml)
+  const suites = doc?.testsuites?.testsuite ?? []
   const flows: FlowResult[] = []
-  const testcaseRegex = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g
-  let match: RegExpExecArray | null
-  while ((match = testcaseRegex.exec(xml)) !== null) {
-    const attrs = match[1]
-    const inner = match[2] || ''
-    const nameMatch = attrs.match(/\bname="([^"]*)"/)
-    const statusMatch = attrs.match(/\bstatus="([^"]*)"/)
-    if (!nameMatch || !statusMatch) continue
-    const flow: FlowResult = {
-      name: decodeEntities(nameMatch[1]),
-      status: statusMatch[1],
-      errors: [],
+  for (const suite of suites) {
+    const cases = suite?.testcase ?? []
+    for (const tc of cases) {
+      if (!tc?.name || !tc?.status) continue
+      const errors = [...(tc.failure ?? []), ...(tc.error ?? [])]
+        .map(extractMessage)
+        .filter((m) => m.length > 0)
+      flows.push({ name: String(tc.name), status: String(tc.status), errors })
     }
-    const failureMatch = inner.match(/<failure[^>]*>([\s\S]*?)<\/failure>/)
-    if (failureMatch) {
-      flow.errors = [decodeEntities(failureMatch[1]).trim()]
-    }
-    flows.push(flow)
   }
   return flows
 }

@@ -32691,17 +32691,13 @@ function main() {
             // 5. Tag passthrough
             core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'));
             core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'));
-            // 6. Deprecation warnings
+            // 6. Deprecated inputs (warnings come from action.yml deprecationMessage)
             const androidApiLevel = core.getInput('android-api-level');
             if (androidApiLevel) {
-                core.warning("'android-api-level' is deprecated and will be removed in a future release. " +
-                    "Use 'device-os' instead (e.g. device-os: android-33).");
                 core.exportVariable('MDEV_ANDROID_API_LEVEL', androidApiLevel);
             }
             const iosVersion = core.getInput('ios-version');
             if (iosVersion) {
-                core.warning("'ios-version' is deprecated and will be removed in a future release. " +
-                    "Use 'device-os' instead (e.g. device-os: iOS-18-2).");
                 core.exportVariable('MDEV_IOS_VERSION', iosVersion);
             }
             // 7. Files

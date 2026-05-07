@@ -25692,6 +25692,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseJunit = parseJunit;
+exports.deriveUploadStatus = deriveUploadStatus;
 exports.main = main;
 const fs = __importStar(__nccwpck_require__(7147));
 const core = __importStar(__nccwpck_require__(2186));
@@ -25699,12 +25700,10 @@ const fast_xml_parser_1 = __nccwpck_require__(4577);
 const parser = new fast_xml_parser_1.XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '',
-    cdataPropName: '__cdata',
     parseAttributeValue: false,
     trimValues: true,
-    // testsuite/testcase repeat; failure/error can repeat per testcase.
-    // Forcing arrays makes the shape predictable.
-    isArray: (name) => name === 'testsuite' || name === 'testcase' || name === 'failure' || name === 'error',
+    // testsuite/testcase/failure can repeat. Forcing arrays makes shape predictable.
+    isArray: (name) => name === 'testsuite' || name === 'testcase' || name === 'failure',
 });
 function extractMessage(node) {
     if (node === null || node === undefined)
@@ -25713,8 +25712,6 @@ function extractMessage(node) {
         return node.trim();
     if (typeof node === 'object') {
         const obj = node;
-        if (typeof obj.__cdata === 'string')
-            return obj.__cdata.trim();
         if (typeof obj['#text'] === 'string')
             return obj['#text'].trim();
         if (typeof obj.message === 'string')
@@ -25723,7 +25720,7 @@ function extractMessage(node) {
     return '';
 }
 function parseJunit(xml) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     const doc = parser.parse(xml);
     const suites = (_b = (_a = doc === null || doc === void 0 ? void 0 : doc.testsuites) === null || _a === void 0 ? void 0 : _a.testsuite) !== null && _b !== void 0 ? _b : [];
     const flows = [];
@@ -25732,24 +25729,50 @@ function parseJunit(xml) {
         for (const tc of cases) {
             if (!(tc === null || tc === void 0 ? void 0 : tc.name) || !(tc === null || tc === void 0 ? void 0 : tc.status))
                 continue;
-            const errors = [...((_d = tc.failure) !== null && _d !== void 0 ? _d : []), ...((_e = tc.error) !== null && _e !== void 0 ? _e : [])]
+            // Maestro CLI's JUnit emitter only writes <failure> elements
+            // (JUnitTestSuiteReporter.kt). It does not emit <error> or <skipped>.
+            const errors = ((_d = tc.failure) !== null && _d !== void 0 ? _d : [])
                 .map(extractMessage)
                 .filter((m) => m.length > 0);
-            flows.push({ name: String(tc.name), status: String(tc.status), errors });
+            flows.push({
+                name: String(tc.name),
+                status: String(tc.status),
+                errors,
+            });
         }
     }
     return flows;
 }
+function deriveUploadStatus(flows, exitCode) {
+    // No flows produced (junit missing or empty): trust the CLI exit code.
+    if (flows.length === 0)
+        return exitCode === 0 ? 'SUCCESS' : 'ERROR';
+    if (flows.some((f) => f.errors.length > 0))
+        return 'ERROR';
+    if (flows.some((f) => f.status === 'ERROR' || f.status === 'FAILURE'))
+        return 'ERROR';
+    if (flows.some((f) => f.status === 'STOPPED'))
+        return 'STOPPED';
+    if (flows.some((f) => f.status === 'CANCELED'))
+        return 'CANCELED';
+    if (flows.some((f) => f.status === 'WARNING'))
+        return 'WARNING';
+    return 'SUCCESS';
+}
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const junitPath = process.argv[2];
-        if (!junitPath || !fs.existsSync(junitPath)) {
-            core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', '[]');
-            return;
-        }
-        const xml = fs.readFileSync(junitPath, 'utf8');
-        const flows = parseJunit(xml);
+        const exitCodeArg = process.argv[3];
+        const flows = junitPath && fs.existsSync(junitPath)
+            ? parseJunit(fs.readFileSync(junitPath, 'utf8'))
+            : [];
         core.setOutput('MAESTRO_CLOUD_FLOW_RESULTS', JSON.stringify(flows));
+        // Exit code is only passed in non-async mode; in async mode the upload is
+        // not awaited, so a terminal upload status doesn't exist yet.
+        if (exitCodeArg !== undefined && exitCodeArg !== '') {
+            const exitCode = Number(exitCodeArg);
+            core.setOutput('MAESTRO_CLOUD_UPLOAD_STATUS', deriveUploadStatus(flows, Number.isFinite(exitCode) ? exitCode : 1));
+        }
     });
 }
 if (require.main === require.cache[eval('__filename')]) {

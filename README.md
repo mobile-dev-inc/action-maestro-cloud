@@ -374,17 +374,12 @@ In order to access these variables you can use the following approach:
 
 - `MAESTRO_CLOUD_FLOW_RESULTS`
 
-  An array of objects with at least `name`, `status`, and `errors` fields.
+  An array of objects with `name`, `status`, and `errors` fields.
 
   ```json
   [
     { "name": "my-first-flow", "status": "SUCCESS", "errors": [] },
     { "name": "my-second-flow", "status": "SUCCESS", "errors": [] },
-    {
-      "name": "my-cancelled-flow",
-      "status": "CANCELED",
-      "errors": [],
-      "cancellationReason": "INFRA_ERROR"
-    }
+    { "name": "my-cancelled-flow", "status": "CANCELED", "errors": [] }
   ]
   ```

@@ -251,25 +251,45 @@ assert_args_contain() {
   grep -qF '"name":"checkout","status":"ERROR","errors":["Element not found"]' "$GITHUB_OUTPUT"
 }
 
-@test "MAESTRO_CLOUD_FLOW_RESULTS captures <error> infra failures" {
-  export FAKE_MAESTRO_MODE="infra-error"
-  run_script
-  assert_failure 1
-  grep -qF '"name":"login","status":"ERROR","errors":["Device unreachable"]' "$GITHUB_OUTPUT"
-}
-
-@test "MAESTRO_CLOUD_FLOW_RESULTS strips CDATA wrappers" {
-  export FAKE_MAESTRO_MODE="cdata-failure"
-  run_script
-  assert_failure 1
-  grep -qF '"name":"checkout","status":"ERROR","errors":["Element <Button> not found"]' "$GITHUB_OUTPUT"
-  ! grep -qF 'CDATA' "$GITHUB_OUTPUT"
-}
-
 @test "MAESTRO_CLOUD_FLOW_RESULTS is empty array when no junit produced" {
   export FAKE_MAESTRO_MODE="fail"  # exits before writing junit
   run_script
   assert_failure 1
   grep -q "MAESTRO_CLOUD_FLOW_RESULTS<<" "$GITHUB_OUTPUT"
   grep -qFx '[]' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_UPLOAD_STATUS=SUCCESS for all-pass run" {
+  run_script
+  assert_success
+  grep -qF "MAESTRO_CLOUD_UPLOAD_STATUS<<" "$GITHUB_OUTPUT"
+  grep -qFx 'SUCCESS' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_UPLOAD_STATUS=ERROR for flow-failure run" {
+  export FAKE_MAESTRO_MODE="flow-failure"
+  run_script
+  assert_failure 1
+  grep -qFx 'ERROR' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_UPLOAD_STATUS=ERROR when CLI fails before junit" {
+  export FAKE_MAESTRO_MODE="fail"
+  run_script
+  assert_failure 1
+  grep -qFx 'ERROR' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_UPLOAD_STATUS=CANCELED when a flow is cancelled" {
+  export FAKE_MAESTRO_MODE="cancelled"
+  run_script
+  assert_success
+  grep -qFx 'CANCELED' "$GITHUB_OUTPUT"
+}
+
+@test "MAESTRO_CLOUD_UPLOAD_STATUS not emitted in async mode" {
+  export MDEV_ASYNC="true"
+  run_script
+  assert_success
+  ! grep -qF "MAESTRO_CLOUD_UPLOAD_STATUS" "$GITHUB_OUTPUT"
 }

@@ -50,6 +50,7 @@ jobs:
         run: |
           echo "MAESTRO_CLOUD_APP_BINARY_ID=${{ steps.android.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
           echo "MAESTRO_CLOUD_CONSOLE_URL=${{ steps.android.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
+          echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.android.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
           echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.android.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
 
       - name: Run iOS test

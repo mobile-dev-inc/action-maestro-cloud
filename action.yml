@@ -70,6 +70,9 @@ outputs:
   MAESTRO_CLOUD_CONSOLE_URL:
     description: "Link to the Maestro Cloud console for this upload"
     value: ${{ steps.run.outputs.MAESTRO_CLOUD_CONSOLE_URL }}
+  MAESTRO_CLOUD_UPLOAD_STATUS:
+    description: "Terminal status of the upload (SUCCESS, ERROR, CANCELED, WARNING, STOPPED). Not set in async mode."
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}
   MAESTRO_CLOUD_FLOW_RESULTS:
     description: "JSON array of per-flow results (name, status, errors). Empty when --async or no junit report was produced."
     value: ${{ steps.run.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}

@@ -79,6 +79,12 @@ fi
 # Reconstruct MAESTRO_CLOUD_FLOW_RESULTS from the junit XML.
 # Always invoked — postprocess emits an empty array if the junit file is
 # missing (e.g. async upload, or CLI failed before the report was written).
-node "${ACTION_DIR}/dist/postprocess.js" "$JUNIT_FILE"
+# Exit code is passed only when not async; that's what gates UPLOAD_STATUS
+# emission inside postprocess (README: "not available in async mode").
+if [ -n "$MDEV_ASYNC" ]; then
+  node "${ACTION_DIR}/dist/postprocess.js" "$JUNIT_FILE"
+else
+  node "${ACTION_DIR}/dist/postprocess.js" "$JUNIT_FILE" "$EXIT_CODE"
+fi
 
 exit "$EXIT_CODE"

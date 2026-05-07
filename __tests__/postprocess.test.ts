@@ -1,4 +1,4 @@
-import { parseJunit } from '../postprocess'
+import { parseJunit, deriveUploadStatus } from '../postprocess'
 
 describe('parseJunit', () => {
   it('returns empty array for empty XML', () => {
@@ -102,59 +102,19 @@ line3</failure>
     ])
   })
 
-  it('parses <error> tags as infra failures', () => {
-    const xml = `<testsuites><testsuite>
-      <testcase name="login" classname="login" status="ERROR">
-        <error>Device unreachable</error>
-      </testcase>
-    </testsuites></testsuite>`
-    expect(parseJunit(xml)).toEqual([
-      { name: 'login', status: 'ERROR', errors: ['Device unreachable'] },
-    ])
-  })
-
-  it('strips CDATA wrappers from failure messages', () => {
+  // Defensive: the CLI's emitter currently produces XML-escaped text, not CDATA,
+  // but a future format change shouldn't surface CDATA wrappers to users.
+  it('unwraps CDATA-wrapped failure messages', () => {
     const xml = `<testsuites><testsuite>
       <testcase name="checkout" classname="checkout" status="ERROR">
         <failure><![CDATA[Element <Button> not found]]></failure>
       </testcase>
-    </testsuites></testsuite>`
+    </testsuite></testsuites>`
     expect(parseJunit(xml)).toEqual([
       {
         name: 'checkout',
         status: 'ERROR',
         errors: ['Element <Button> not found'],
-      },
-    ])
-  })
-
-  it('strips CDATA wrappers from error messages', () => {
-    const xml = `<testsuites><testsuite>
-      <testcase name="login" classname="login" status="ERROR">
-        <error><![CDATA[connection refused: host=10.0.0.1 port=5555]]></error>
-      </testcase>
-    </testsuites></testsuite>`
-    expect(parseJunit(xml)).toEqual([
-      {
-        name: 'login',
-        status: 'ERROR',
-        errors: ['connection refused: host=10.0.0.1 port=5555'],
-      },
-    ])
-  })
-
-  it('captures multiple error elements on a single testcase', () => {
-    const xml = `<testsuites><testsuite>
-      <testcase name="checkout" classname="checkout" status="ERROR">
-        <failure>assertion failed</failure>
-        <error>cleanup hook crashed</error>
-      </testcase>
-    </testsuites></testsuite>`
-    expect(parseJunit(xml)).toEqual([
-      {
-        name: 'checkout',
-        status: 'ERROR',
-        errors: ['assertion failed', 'cleanup hook crashed'],
       },
     ])
   })
@@ -172,5 +132,108 @@ line3</failure>
       { name: 'a', status: 'SUCCESS', errors: [] },
       { name: 'b', status: 'ERROR', errors: ['x'] },
     ])
+  })
+})
+
+describe('deriveUploadStatus', () => {
+  it('returns SUCCESS when all flows pass and exit 0', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'SUCCESS', errors: [] },
+          { name: 'b', status: 'SUCCESS', errors: [] },
+        ],
+        0
+      )
+    ).toBe('SUCCESS')
+  })
+
+  it('returns ERROR when any flow has errors', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'SUCCESS', errors: [] },
+          { name: 'b', status: 'ERROR', errors: ['boom'] },
+        ],
+        1
+      )
+    ).toBe('ERROR')
+  })
+
+  it('returns ERROR when any flow status is ERROR even with empty errors[]', () => {
+    expect(
+      deriveUploadStatus(
+        [{ name: 'a', status: 'ERROR', errors: [] }],
+        1
+      )
+    ).toBe('ERROR')
+  })
+
+  it('returns CANCELED when no errors but a flow is cancelled', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'SUCCESS', errors: [] },
+          { name: 'b', status: 'CANCELED', errors: [] },
+        ],
+        1
+      )
+    ).toBe('CANCELED')
+  })
+
+  it('returns STOPPED when no errors but a flow is stopped', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'SUCCESS', errors: [] },
+          { name: 'b', status: 'STOPPED', errors: [] },
+        ],
+        1
+      )
+    ).toBe('STOPPED')
+  })
+
+  it('returns WARNING when no errors/cancels/stopped but a flow is warning', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'SUCCESS', errors: [] },
+          { name: 'b', status: 'WARNING', errors: [] },
+        ],
+        0
+      )
+    ).toBe('WARNING')
+  })
+
+  it('returns ERROR for non-zero exit with no flows', () => {
+    expect(deriveUploadStatus([], 1)).toBe('ERROR')
+  })
+
+  it('returns SUCCESS for zero exit with no flows', () => {
+    expect(deriveUploadStatus([], 0)).toBe('SUCCESS')
+  })
+
+  it('errors[] takes precedence over CANCELED', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'CANCELED', errors: [] },
+          { name: 'b', status: 'ERROR', errors: ['oops'] },
+        ],
+        1
+      )
+    ).toBe('ERROR')
+  })
+
+  it('STOPPED takes precedence over CANCELED', () => {
+    expect(
+      deriveUploadStatus(
+        [
+          { name: 'a', status: 'CANCELED', errors: [] },
+          { name: 'b', status: 'STOPPED', errors: [] },
+        ],
+        1
+      )
+    ).toBe('STOPPED')
   })
 })

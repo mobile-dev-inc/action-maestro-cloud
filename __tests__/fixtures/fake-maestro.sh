@@ -59,21 +59,13 @@ case "${FAKE_MAESTRO_MODE:-default}" in
     <testcase name="checkout" classname="checkout" status="ERROR"><failure>Element not found</failure></testcase>'
     exit 1
     ;;
-  infra-error)
-    # Infra failure: junit emits <error> instead of <failure>.
+  cancelled)
+    # Flow cancelled before completion. The CLI's JUnit emitter records the
+    # status="CANCELED" attribute on the testcase (no <skipped> element).
     echo "App binary id: app_abc123"
     echo "Visit Maestro Cloud for more details about this upload:"
     echo "https://app.maestro.dev/project/proj_123/upload/upload_abc"
-    write_junit '    <testcase name="login" classname="login" status="ERROR"><error>Device unreachable</error></testcase>'
-    exit 1
-    ;;
-  cdata-failure)
-    # Failure message wrapped in CDATA (CLI does this when content has < > & chars).
-    echo "App binary id: app_abc123"
-    echo "Visit Maestro Cloud for more details about this upload:"
-    echo "https://app.maestro.dev/project/proj_123/upload/upload_abc"
-    write_junit '    <testcase name="checkout" classname="checkout" status="ERROR"><failure><![CDATA[Element <Button> not found]]></failure></testcase>'
-    exit 1
+    write_junit '    <testcase name="login" classname="login" status="CANCELED"/>'
     ;;
   fail)
     echo "Some failure happened"

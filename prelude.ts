@@ -85,22 +85,30 @@ function parseEnv(lines: string[]): string {
   return validated.join('\n')
 }
 
+// Always export every MDEV_* variable, falling back to empty string when the
+// input is absent. core.exportVariable writes to $GITHUB_ENV, which persists
+// across all subsequent steps in the same job — without this overwrite, a
+// previous step's value (e.g. MDEV_APP_BINARY_ID from an earlier upload)
+// would leak into a later step that doesn't re-set it. Empty strings are
+// treated by run-cloud.sh's `${VAR:+--flag "$VAR"}` pattern as "skip the
+// flag", so empty exports are equivalent to "not set" for the CLI.
+function exportMdev(key: string, value: string | undefined | null): void {
+  core.exportVariable(key, value || '')
+}
+
 export async function main(): Promise<void> {
   try {
     // 1. Required primitives + api-url
-    core.exportVariable('MDEV_API_KEY', core.getInput('api-key'))
-    core.exportVariable('MDEV_PROJECT_ID', core.getInput('project-id'))
-    const apiUrl = core.getInput('api-url')
-    if (apiUrl) core.exportVariable('MDEV_API_URL', apiUrl)
+    exportMdev('MDEV_API_KEY', core.getInput('api-key'))
+    exportMdev('MDEV_PROJECT_ID', core.getInput('project-id'))
+    exportMdev('MDEV_API_URL', core.getInput('api-url'))
 
     // 2. Branch + name
     const branchInput = core.getInput('branch') || undefined
-    const branch = getBranchName(branchInput)
-    core.exportVariable('MDEV_BRANCH', branch)
+    exportMdev('MDEV_BRANCH', getBranchName(branchInput))
 
     const nameInput = core.getInput('name')
-    const name = nameInput || getInferredName()
-    core.exportVariable('MDEV_NAME', name)
+    exportMdev('MDEV_NAME', nameInput || getInferredName())
 
     // 3. App + device inputs + validation
     const appFile = core.getInput('app-file')
@@ -112,60 +120,47 @@ export async function main(): Promise<void> {
 
     // 4. Env multiline
     const envLines = core.getMultilineInput('env')
-    const envSerialized = parseEnv(envLines)
-    core.exportVariable('MDEV_ENV', envSerialized)
+    exportMdev('MDEV_ENV', parseEnv(envLines))
 
     // 5. Tag passthrough
-    core.exportVariable('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
-    core.exportVariable('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
+    exportMdev('MDEV_INCLUDE_TAGS', core.getInput('include-tags'))
+    exportMdev('MDEV_EXCLUDE_TAGS', core.getInput('exclude-tags'))
 
     // 6. Deprecated inputs (warnings come from action.yml deprecationMessage)
-    const androidApiLevel = core.getInput('android-api-level')
-    if (androidApiLevel) {
-      core.exportVariable('MDEV_ANDROID_API_LEVEL', androidApiLevel)
-    }
-    const iosVersion = core.getInput('ios-version')
-    if (iosVersion) {
-      core.exportVariable('MDEV_IOS_VERSION', iosVersion)
-    }
+    exportMdev('MDEV_ANDROID_API_LEVEL', core.getInput('android-api-level'))
+    exportMdev('MDEV_IOS_VERSION', core.getInput('ios-version'))
 
     // 7. Files (with glob expansion to preserve action's historical contract;
     // the Maestro CLI itself does not expand globs in --app-file / --mapping)
-    if (appFile) {
-      const resolvedAppFile = await resolveFileGlob(appFile, 'app-file')
-      core.exportVariable('MDEV_APP_FILE', resolvedAppFile)
-    }
-    if (appBinaryId) core.exportVariable('MDEV_APP_BINARY_ID', appBinaryId)
+    exportMdev(
+      'MDEV_APP_FILE',
+      appFile ? await resolveFileGlob(appFile, 'app-file') : ''
+    )
+    exportMdev('MDEV_APP_BINARY_ID', appBinaryId)
     const mappingFile = core.getInput('mapping-file')
-    if (mappingFile) {
-      const resolvedMappingFile = await resolveFileGlob(mappingFile, 'mapping-file')
-      core.exportVariable('MDEV_MAPPING_FILE', resolvedMappingFile)
-    }
+    exportMdev(
+      'MDEV_MAPPING_FILE',
+      mappingFile ? await resolveFileGlob(mappingFile, 'mapping-file') : ''
+    )
 
     // 8. Device knobs (inputs already read in section 3)
-    if (deviceOs) core.exportVariable('MDEV_DEVICE_OS', deviceOs)
-    if (deviceLocale) core.exportVariable('MDEV_DEVICE_LOCALE', deviceLocale)
-    if (deviceModel) core.exportVariable('MDEV_DEVICE_MODEL', deviceModel)
+    exportMdev('MDEV_DEVICE_OS', deviceOs)
+    exportMdev('MDEV_DEVICE_LOCALE', deviceLocale)
+    exportMdev('MDEV_DEVICE_MODEL', deviceModel)
 
     // 9. Async + timeout + workspace
     const async = core.getInput('async')
-    if (async === 'true') core.exportVariable('MDEV_ASYNC', 'true')
-    const timeout = core.getInput('timeout')
-    if (timeout) core.exportVariable('MDEV_TIMEOUT', timeout)
-    const workspace = core.getInput('workspace')
-    if (workspace) core.exportVariable('MDEV_WORKSPACE', workspace)
+    exportMdev('MDEV_ASYNC', async === 'true' ? 'true' : '')
+    exportMdev('MDEV_TIMEOUT', core.getInput('timeout'))
+    exportMdev('MDEV_WORKSPACE', core.getInput('workspace'))
 
     // 10. GitHub context metadata
     const ctx = github.context
-    core.exportVariable('MDEV_REPO_OWNER', ctx.repo.owner)
-    core.exportVariable('MDEV_REPO_NAME', ctx.repo.repo)
+    exportMdev('MDEV_REPO_OWNER', ctx.repo.owner)
+    exportMdev('MDEV_REPO_NAME', ctx.repo.repo)
     const pr = ctx.payload.pull_request as any
-    if (pr?.number !== undefined) {
-      core.exportVariable('MDEV_PR_ID', String(pr.number))
-    }
-    if (pr?.head?.sha) {
-      core.exportVariable('MDEV_COMMIT_SHA', String(pr.head.sha))
-    }
+    exportMdev('MDEV_PR_ID', pr?.number !== undefined ? String(pr.number) : '')
+    exportMdev('MDEV_COMMIT_SHA', pr?.head?.sha ? String(pr.head.sha) : '')
   } catch (e: any) {
     core.setFailed(e.message)
   }

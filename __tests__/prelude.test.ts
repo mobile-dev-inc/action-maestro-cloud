@@ -449,11 +449,13 @@ describe('deprecated inputs', () => {
     expect(exportedVars.MDEV_IOS_VERSION).toBe('17')
   })
 
-  it('does not export deprecated MDEV_* vars when inputs are absent', async () => {
+  it('exports deprecated MDEV_* vars as empty when inputs are absent', async () => {
+    // Empty exports are deliberate: they overwrite any stale value left by a
+    // prior step's invocation in the same job ($GITHUB_ENV is cumulative).
     setInputs({ ...required, 'app-file': 'a.apk' })
     await main()
-    expect(exportedVars.MDEV_ANDROID_API_LEVEL).toBeUndefined()
-    expect(exportedVars.MDEV_IOS_VERSION).toBeUndefined()
+    expect(exportedVars.MDEV_ANDROID_API_LEVEL).toBe('')
+    expect(exportedVars.MDEV_IOS_VERSION).toBe('')
   })
 })
 
@@ -663,5 +665,69 @@ describe('glob expansion for app-file and mapping-file', () => {
     setInputs({ ...required, 'app-file': 'missing.apk' })
     await main()
     expect(failures.some((f) => /'app-file'/.test(f))).toBe(true)
+  })
+})
+
+// Regression test for the cross-step env leak: $GITHUB_ENV is cumulative
+// across steps in the same job, so any MDEV_* variable that prelude
+// conditionally skips would otherwise carry over a stale value from a
+// previous step. The fix is to always export every MDEV_* variable; absent
+// inputs export as ''. Verified end-to-end against the iOS-after-Android
+// 400 we hit in validate-local (Android binary id leaking into iOS upload).
+describe('overwrite behavior across invocations', () => {
+  let exportedVars: Record<string, string>
+
+  beforeEach(() => {
+    ;(github as any).context = JSON.parse(JSON.stringify(baseContext))
+    exportedVars = {}
+    jest.spyOn(core, 'exportVariable').mockImplementation((k, v) => {
+      exportedVars[k] = String(v)
+    })
+    jest.spyOn(core, 'warning').mockImplementation(() => {})
+    jest.spyOn(core, 'setFailed').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) {
+      if (k.startsWith('INPUT_')) delete process.env[k]
+    }
+  })
+
+  it('every MDEV_* var is written on every run (empty when input absent)', async () => {
+    setInputs({ ...required, 'app-file': 'a.apk' })
+    await main()
+    // The full set of MDEV_* keys the action contracts on. If a key is
+    // missing here, an earlier step's value could leak into this run.
+    const expectedKeys = [
+      'MDEV_API_KEY', 'MDEV_PROJECT_ID', 'MDEV_API_URL',
+      'MDEV_BRANCH', 'MDEV_NAME', 'MDEV_ENV',
+      'MDEV_INCLUDE_TAGS', 'MDEV_EXCLUDE_TAGS',
+      'MDEV_ANDROID_API_LEVEL', 'MDEV_IOS_VERSION',
+      'MDEV_APP_FILE', 'MDEV_APP_BINARY_ID', 'MDEV_MAPPING_FILE',
+      'MDEV_DEVICE_OS', 'MDEV_DEVICE_LOCALE', 'MDEV_DEVICE_MODEL',
+      'MDEV_ASYNC', 'MDEV_TIMEOUT', 'MDEV_WORKSPACE',
+      'MDEV_REPO_OWNER', 'MDEV_REPO_NAME',
+      'MDEV_PR_ID', 'MDEV_COMMIT_SHA',
+    ]
+    for (const key of expectedKeys) {
+      expect(exportedVars).toHaveProperty(key)
+    }
+  })
+
+  it('app-binary-id absent overwrites any prior export with empty', async () => {
+    // Mirrors the validate-local sequence: chained step set MDEV_APP_BINARY_ID,
+    // next step uses app-file alone. The next step's prelude must clear it.
+    setInputs({ ...required, 'app-file': 'wikipedia.zip' })
+    await main()
+    expect(exportedVars.MDEV_APP_BINARY_ID).toBe('')
+    expect(exportedVars.MDEV_APP_FILE).toBe('wikipedia.zip')
+  })
+
+  it('app-file absent overwrites any prior export with empty', async () => {
+    // Inverse: chained-binary-id step must clear a previous MDEV_APP_FILE.
+    setInputs({ ...required, 'app-binary-id': 'app_xyz' })
+    await main()
+    expect(exportedVars.MDEV_APP_FILE).toBe('')
+    expect(exportedVars.MDEV_APP_BINARY_ID).toBe('app_xyz')
   })
 })

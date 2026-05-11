@@ -20,10 +20,10 @@ inputs:
     description: "The Proguard mapping file to upload to Maestro Cloud"
     required: false
   workspace:
-    description: "Path to a folder that contains Maestro flows (.mobiledev by default)"
+    description: "Path to a folder that contains Maestro flows (.maestro by default)"
     required: false
   branch:
-    description: "Branch name to use for the upload metadata (overrides automatic detection). Used in Maestro Cloud for stopping previous flows."
+    description: "Branch name to use for the upload metadata (overrides automatic detection)."
     required: false
   env:
     description: "Set of key=value entries to pass as an input to Maestro flows"
@@ -32,8 +32,13 @@ inputs:
     description: "Whether to run Upload in async fashion and not block until completed"
     required: false
   android-api-level:
-    description: "Android API level to run your flow against"
+    description: "Android API level (e.g. 33). Prefer 'device-os' (e.g. android-33)."
     required: false
+    deprecationMessage: "'android-api-level' is deprecated. Use 'device-os' instead."
+  ios-version:
+    description: "iOS version (e.g. 18). Prefer 'device-os' (e.g. iOS-18-2)."
+    required: false
+    deprecationMessage: "'ios-version' is deprecated. Use 'device-os' instead."
   device-locale:
     description: "Device locale to run your flow against"
     required: false
@@ -44,7 +49,7 @@ inputs:
     description: "Device OS to run your flow against"
     required: false
   include-tags:
-    description: "List of tags that will remove flows that does not have the provided tags"
+    description: "List of tags that will remove flows that do not have the provided tags"
     required: false
   exclude-tags:
     description: "List of tags that will remove flows containing the provided tags"
@@ -55,9 +60,64 @@ inputs:
   project-id:
     description: "Maestro Cloud project ID"
     required: true
+  maestro-cli-version:
+    description: "Pin a specific Maestro CLI version (defaults to latest)"
+    required: false
+outputs:
+  MAESTRO_CLOUD_APP_BINARY_ID:
+    description: "ID of the binary uploaded to Maestro Cloud"
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+  MAESTRO_CLOUD_CONSOLE_URL:
+    description: "Link to the Maestro Cloud console for this upload"
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_CONSOLE_URL }}
+  MAESTRO_CLOUD_UPLOAD_STATUS:
+    description: "Terminal status of the upload (SUCCESS, ERROR, CANCELED, WARNING, STOPPED). Not set in async mode."
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}
+  MAESTRO_CLOUD_FLOW_RESULTS:
+    description: "JSON array of per-flow results (name, status, errors). Empty when --async or no junit report was produced."
+    value: ${{ steps.run.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}
 runs:
-  using: "node20"
-  main: "dist/index.js"
+  using: composite
+  steps:
+    - name: Install Maestro CLI
+      shell: bash
+      env:
+        MAESTRO_VERSION: ${{ inputs.maestro-cli-version }}
+      run: |
+        curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
+        echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+    - name: Derive GitHub context
+      shell: bash
+      env:
+        # @actions/core.getInput('foo-bar') reads INPUT_FOO-BAR (hyphen preserved).
+        INPUT_API-KEY: ${{ inputs.api-key }}
+        INPUT_API-URL: ${{ inputs.api-url }}
+        INPUT_PROJECT-ID: ${{ inputs.project-id }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_APP-FILE: ${{ inputs.app-file }}
+        INPUT_APP-BINARY-ID: ${{ inputs.app-binary-id }}
+        INPUT_MAPPING-FILE: ${{ inputs.mapping-file }}
+        INPUT_WORKSPACE: ${{ inputs.workspace }}
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_ENV: ${{ inputs.env }}
+        INPUT_ASYNC: ${{ inputs.async }}
+        INPUT_ANDROID-API-LEVEL: ${{ inputs.android-api-level }}
+        INPUT_IOS-VERSION: ${{ inputs.ios-version }}
+        INPUT_DEVICE-LOCALE: ${{ inputs.device-locale }}
+        INPUT_DEVICE-MODEL: ${{ inputs.device-model }}
+        INPUT_DEVICE-OS: ${{ inputs.device-os }}
+        INPUT_INCLUDE-TAGS: ${{ inputs.include-tags }}
+        INPUT_EXCLUDE-TAGS: ${{ inputs.exclude-tags }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+      run: node "${{ github.action_path }}/dist/prelude.js"
+
+    - name: Run maestro cloud
+      id: run
+      shell: bash
+      env:
+        MDEV_CI: github
+      run: bash "${{ github.action_path }}/scripts/run-cloud.sh"
 branding:
   icon: "upload-cloud"
   color: "blue"

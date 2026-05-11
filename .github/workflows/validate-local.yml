@@ -1,47 +1,119 @@
 name: Plugin Validation (Local)
 
+# Manually-dispatched smoke test that exercises this branch's copy of the
+# action (`uses: ./`) against the real Maestro Cloud backend. Run it before
+# tagging a release to catch regressions that mocked tests can't see — CLI
+# install, GitHub Actions wiring, runner portability, and end-to-end output
+# propagation. Triggered from the Actions tab on the working branch.
+
 on:
   workflow_dispatch:
+    inputs:
+      maestro-cli-version:
+        description: "Maestro CLI version to test against (empty = latest release)"
+        required: false
+        default: ""
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v6
-      
+
       - name: Install JDK 17
         uses: actions/setup-java@v5
         with:
-          distribution: "zulu"
+          distribution: 'zulu'
           java-version: 17
 
-      - name: Install Maestro
+      - name: Install Maestro (for download-samples)
+        env:
+          # Pin the pre-action install to the same version we're validating
+          # so `maestro download-samples` and the action's CLI agree.
+          MAESTRO_VERSION: ${{ inputs.maestro-cli-version }}
         run: |
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
           echo -n "e2e" > ${HOME}/.maestro/uuid
 
       - name: Download samples
-        run: |
-          maestro download-samples
+        run: maestro download-samples
 
-      - name: Run Android test
+      # Android: app-file upload captures binary id; the chained step then
+      # exercises app-binary-id reuse plus the multiline `env:` parser rewrite.
+      - name: Run Android upload
+        id: android
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
+          project-id: proj_01jawvd2y2f4c9bzxwvs4dqqha
           app-file: samples/wikipedia.apk
           workspace: samples
           include-tags: advanced
-        
-      - name: Run iOS test
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
+
+      - name: Verify Android outputs
+        if: always()
+        run: |
+          echo "MAESTRO_CLOUD_APP_BINARY_ID=${{ steps.android.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
+          echo "MAESTRO_CLOUD_CONSOLE_URL=${{ steps.android.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
+          echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.android.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
+          echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.android.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
+
+      - name: Run Android with chained binary-id and multiline env
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
+          project-id: proj_01jawvd2y2f4c9bzxwvs4dqqha
+          app-binary-id: ${{ steps.android.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+          workspace: samples
+          include-tags: advanced
+          device-model: pixel_6
+          device-os: android-34
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
+          env: |
+            USERNAME=test_user
+            PASSWORD=test_pass
+            TOKEN=foo=bar=baz
+
+      # iOS: app-file upload exercises device-model + device-os; the chained
+      # step verifies app-binary-id reuse on the iOS path too.
+      - name: Run iOS upload
+        id: ios
+        uses: ./
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          project-id: proj_01jawvd2y2f4c9bzxwvs4dqqha
           app-file: samples/wikipedia.zip
           workspace: samples
           include-tags: advanced
+          device-model: iPhone-11
           device-os: iOS-18-2
           timeout: 180
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}
+
+      - name: Verify iOS outputs
+        if: always()
+        run: |
+          echo "MAESTRO_CLOUD_APP_BINARY_ID=${{ steps.ios.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}"
+          echo "MAESTRO_CLOUD_CONSOLE_URL=${{ steps.ios.outputs.MAESTRO_CLOUD_CONSOLE_URL }}"
+          echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.ios.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
+          echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.ios.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
+
+      - name: Run iOS with chained binary-id
+        uses: ./
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          project-id: proj_01jawvd2y2f4c9bzxwvs4dqqha
+          app-binary-id: ${{ steps.ios.outputs.MAESTRO_CLOUD_APP_BINARY_ID }}
+          workspace: samples
+          include-tags: advanced
+          device-model: iPhone-11
+          device-os: iOS-18-2
+          timeout: 180
+          maestro-cli-version: ${{ inputs.maestro-cli-version }}

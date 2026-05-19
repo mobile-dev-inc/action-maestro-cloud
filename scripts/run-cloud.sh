@@ -20,6 +20,15 @@ fi
 # Explicit template (no `-t`) so mktemp behaves the same on BSD (macOS) and GNU.
 JUNIT_FILE=$(mktemp "${TMPDIR:-/tmp}/maestro-junit.XXXXXX") || { echo "::error::failed to create temp junit file"; exit 1; }
 
+# Built before CLOUD_COMMAND so the array can splice it cleanly. We can't use
+# ${MDEV_ASYNC:-...} inline because that substitutes MDEV_ASYNC's *value*
+# ("true") when set — leaking a stray positional that the CLI parses as the
+# flows path. An explicit array keeps the expansion behavior unambiguous.
+format_args=()
+if [ -z "$MDEV_ASYNC" ]; then
+  format_args=(--format junit --output "$JUNIT_FILE")
+fi
+
 CLOUD_COMMAND=(maestro cloud
   --apiKey "$MDEV_API_KEY"
   --project-id "$MDEV_PROJECT_ID"
@@ -42,8 +51,7 @@ CLOUD_COMMAND=(maestro cloud
   ${MDEV_ASYNC:+--async}
   ${MDEV_ANDROID_API_LEVEL:+--android-api-level "$MDEV_ANDROID_API_LEVEL"}
   ${MDEV_IOS_VERSION:+--ios-version "$MDEV_IOS_VERSION"}
-  ${MDEV_ASYNC:---format junit}
-  ${MDEV_ASYNC:---output "$JUNIT_FILE"}
+  "${format_args[@]+"${format_args[@]}"}"
   "${env_args[@]+"${env_args[@]}"}"
   --flows "${MDEV_WORKSPACE:-.maestro}"
 )

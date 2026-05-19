@@ -13,8 +13,10 @@ if [ -n "$MDEV_ENV" ]; then
   done <<< "$MDEV_ENV"
 fi
 
-# JUnit XML is produced unconditionally so we can reconstruct
+# JUnit XML is produced in sync mode so we can reconstruct
 # MAESTRO_CLOUD_FLOW_RESULTS. The CLI doesn't expose a JSON format.
+# In async mode --format/--output are omitted: the CLI rejects --format with
+# --async (CloudInteractor.kt:104) since there are no results at upload time.
 # Explicit template (no `-t`) so mktemp behaves the same on BSD (macOS) and GNU.
 JUNIT_FILE=$(mktemp "${TMPDIR:-/tmp}/maestro-junit.XXXXXX") || { echo "::error::failed to create temp junit file"; exit 1; }
 
@@ -40,8 +42,8 @@ CLOUD_COMMAND=(maestro cloud
   ${MDEV_ASYNC:+--async}
   ${MDEV_ANDROID_API_LEVEL:+--android-api-level "$MDEV_ANDROID_API_LEVEL"}
   ${MDEV_IOS_VERSION:+--ios-version "$MDEV_IOS_VERSION"}
-  --format junit
-  --output "$JUNIT_FILE"
+  ${MDEV_ASYNC:---format junit}
+  ${MDEV_ASYNC:---output "$JUNIT_FILE"}
   "${env_args[@]+"${env_args[@]}"}"
   --flows "${MDEV_WORKSPACE:-.maestro}"
 )

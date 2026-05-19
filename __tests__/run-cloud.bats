@@ -223,11 +223,21 @@ assert_args_contain() {
   assert_failure 1
 }
 
-@test "passes --format junit and --output to the CLI" {
+@test "passes --format junit and --output to the CLI in sync mode" {
   run_script
   assert_success
   assert_args_contain "--format junit"
   assert_args_contain "--output"
+}
+
+# CloudInteractor.kt:104 rejects --format with --async ("Cannot use --format
+# with --async"), so neither --format nor --output may be passed in async mode.
+@test "omits --format and --output when MDEV_ASYNC=true" {
+  export MDEV_ASYNC="true"
+  run_script
+  assert_success
+  ! grep -q -- "--format" "$FAKE_MAESTRO_ARGS_FILE"
+  ! grep -q -- "--output" "$FAKE_MAESTRO_ARGS_FILE"
 }
 
 # NOTE: @actions/core.setOutput uses GitHub's heredoc framing in $GITHUB_OUTPUT

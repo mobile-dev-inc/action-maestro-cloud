@@ -110,7 +110,9 @@ jobs:
           echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.ios.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
           echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.ios.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
 
-      - name: Run iOS with chained binary-id
+      # Async on the iOS side too — covers the async path on both platforms
+      # without an extra upload.
+      - name: Run iOS async with chained binary-id
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
@@ -121,4 +123,5 @@ jobs:
           device-model: iPhone-11
           device-os: iOS-18-2
           timeout: 180
+          async: true
           maestro-cli-version: ${{ inputs.maestro-cli-version }}

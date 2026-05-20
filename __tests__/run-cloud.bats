@@ -223,11 +223,33 @@ assert_args_contain() {
   assert_failure 1
 }
 
-@test "passes --format junit and --output to the CLI" {
+@test "passes --format junit and --output to the CLI in sync mode" {
   run_script
   assert_success
   assert_args_contain "--format junit"
   assert_args_contain "--output"
+}
+
+# CloudInteractor.kt:104 rejects --format with --async ("Cannot use --format
+# with --async"), so neither --format nor --output may be passed in async mode.
+# Also asserts no stray "true" token leaks into argv — a previous attempt used
+# ${MDEV_ASYNC:-...} which expands to the variable's value ("true") when set,
+# which the CLI then parses as the --flows positional path.
+@test "omits --format and --output when MDEV_ASYNC=true with no stray tokens" {
+  export MDEV_ASYNC="true"
+  run_script
+  assert_success
+  ! grep -q -- "--format" "$FAKE_MAESTRO_ARGS_FILE"
+  ! grep -q -- "--output" "$FAKE_MAESTRO_ARGS_FILE"
+  # Argv should still terminate cleanly with --flows <workspace>.
+  local args
+  args="$(recorded_args)"
+  [[ "$args" == *"--flows flows" ]] || {
+    echo "Expected argv to end with '--flows flows', got: $args"
+    return 1
+  }
+  # No bare 'true' token should appear (only --async, which is a flag).
+  ! grep -qE '(^| )true( |$)' "$FAKE_MAESTRO_ARGS_FILE"
 }
 
 # NOTE: @actions/core.setOutput uses GitHub's heredoc framing in $GITHUB_OUTPUT

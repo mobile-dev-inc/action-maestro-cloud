@@ -65,7 +65,11 @@ jobs:
           echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.android.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
           echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.android.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
 
-      - name: Run Android with chained binary-id and multiline env
+      # Chained step doubles as the async smoke test: app-binary-id reuse,
+      # multiline env, device knobs, AND --async path. The CLI rejects --format
+      # with --async (CloudInteractor.kt:104), so this fails fast if
+      # run-cloud.sh ever regresses to passing --format unconditionally.
+      - name: Run Android async with chained binary-id and multiline env
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
@@ -75,6 +79,7 @@ jobs:
           include-tags: advanced
           device-model: pixel_6
           device-os: android-34
+          async: true
           maestro-cli-version: ${{ inputs.maestro-cli-version }}
           env: |
             USERNAME=test_user
@@ -105,7 +110,9 @@ jobs:
           echo "MAESTRO_CLOUD_UPLOAD_STATUS=${{ steps.ios.outputs.MAESTRO_CLOUD_UPLOAD_STATUS }}"
           echo "MAESTRO_CLOUD_FLOW_RESULTS=${{ steps.ios.outputs.MAESTRO_CLOUD_FLOW_RESULTS }}"
 
-      - name: Run iOS with chained binary-id
+      # Async on the iOS side too — covers the async path on both platforms
+      # without an extra upload.
+      - name: Run iOS async with chained binary-id
         uses: ./
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
@@ -116,4 +123,5 @@ jobs:
           device-model: iPhone-11
           device-os: iOS-18-2
           timeout: 180
+          async: true
           maestro-cli-version: ${{ inputs.maestro-cli-version }}

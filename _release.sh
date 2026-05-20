@@ -60,7 +60,8 @@ echo "PR: ${PR_URL}"
 
 # 5. Enable auto-merge (squash) and wait for it to land
 echo "==> Enabling auto-merge"
-gh pr merge "${PR_URL}" --auto --squash
+gh pr merge "${PR_URL}" --auto --squash || \
+  echo "Auto-merge unavailable; merge ${PR_URL} manually — script will continue polling."
 
 echo "==> Waiting for PR to merge (Ctrl-C to abort; rerun this script after manual merge to tag)"
 while true; do

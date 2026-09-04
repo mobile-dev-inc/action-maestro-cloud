@@ -2,6 +2,28 @@
 
 Run your Flows on [Maestro Cloud](https://app.maestro.dev).
 
+## Contents
+
+- [Using the action](#using-the-action)
+- [Inputs](#inputs)
+- [Triggers](#triggers)
+- [Android](#android)
+  - [ProGuard Deobfuscation](#proguard-deobfuscation)
+- [iOS](#ios)
+  - [.dSYM file](#dsym-file)
+- [Custom workspace location](#custom-workspace-location)
+- [Custom name](#custom-name)
+- [Custom branch](#custom-branch)
+- [Run in async mode](#run-in-async-mode)
+- [Adding environment variables](#adding-environment-variables)
+- [Using tags](#using-tags)
+- [Specifying device model and OS version](#specifying-device-model-and-os-version)
+- [Running Web tests](#running-web-tests)
+- [Using an already uploaded App](#using-an-already-uploaded-app)
+- [Configuring the locale for the device where the flows will be executed](#configuring-the-locale-for-the-device-where-the-flows-will-be-executed)
+- [Outputs](#outputs)
+  - [Output types](#output-types)
+
 ## Using the action
 
 Add the following to your workflow. Note that you can use the `v3` tag if you want to keep using the latest version of the action, which will automatically resolve to all `v3.minor.patch` versions as they get published.
@@ -20,8 +42,8 @@ Add the following to your workflow. Note that you can use the `v3` tag if you wa
 | ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `api-key`           | Yes                      | Your Maestro Cloud API key                                                                                                                                                                 |
 | `android-api-level` | No                       | **Deprecated.** Use `device-os` instead (e.g. `android-33`).                                                                                                                               |
-| `app-file`          | Yes (or `app-binary-id`) | Path to the app file to upload.                                                                                                                                                            |
-| `app-binary-id`     | Yes (or `app-file`)      | The ID of a previously uploaded app-file.                                                                                                                                                  |
+| `app-file`          | Yes for Android/iOS (or `app-binary-id`) | Path to the app file to upload. Must be omitted for web tests (`device-os: web`).                                                                                                                                                            |
+| `app-binary-id`     | Yes for Android/iOS (or `app-file`) | The ID of a previously uploaded app-file. Must be omitted for web tests (`device-os: web`).                                                                                                                                                  |
 | `async`             | No                       | Whether to start the flow and exit the action (defaults to `false`)                                                                                                                        |
 | `branch`            | No                       | Branch name to use for the upload (overrides automatic detection)                                                                                                                          |
 | `env`               | No                       | Environment variables to pass to the run                                                                                                                                                   |
@@ -33,7 +55,7 @@ Add the following to your workflow. Note that you can use the `v3` tag if you wa
 | `timeout`           | No                       | How long to wait for the run to complete when not async (defaults to 30 minutes)                                                                                                           |
 | `workspace`         | No                       | Path to the workspace directory containing the Flows (defaults to `.maestro`)                                                                                                              |
 | `device-model`      | No                       | The [device model](https://docs.maestro.dev/cloud/reference/configuring-os-version#using-a-specific-ios-minor-version-and-device-recommended) to use when running the Flows. Supported: iOS — `iPhone-11`, `iPhone-11-Pro`, etc.; Android — `pixel_6`, `pixel_7`, etc. |
-| `device-os`         | No                       | The [device OS version](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows. iOS: `iOS-16-2`, `iOS-17-5`, `iOS-18-2`, etc. Android: `android-33`, `android-34`, etc.                                                        |
+| `device-os`         | No                       | The [device OS version](https://docs.maestro.dev/cloud/reference/configuring-os-version) to use when running the Flows. iOS: `iOS-16-2`, `iOS-17-5`, `iOS-18-2`, etc. Android: `android-33`, `android-34`, etc. Use `web` to run web Flows in a browser — no app file needed, see [Running Web tests](#running-web-tests).                                                        |
 | `device-locale`     | No                       | The [device locale](https://docs.maestro.dev/cloud/reference/configuring-device-locale) to use when running the Flows (eg en_US)                                                           |
 
 ## Triggers
@@ -155,6 +177,7 @@ If you want to override this behaviour and specify your own name, you can do so 
 The action automatically detects the branch name from the GitHub context. However, in certain workflow triggers like `issue_comment`, `repository_dispatch`, or `workflow_dispatch`, the automatic detection may not work correctly because these events typically run on the default branch (main) regardless of which branch you actually want to test.
 
 The `branch` input allows you to explicitly specify the branch name for these scenarios. This is particularly useful when:
+
 - Running tests on a PR branch via `issue_comment` events (e.g., comment-triggered workflows)
 - Triggering workflows via API with `repository_dispatch`
 - Using `workflow_dispatch` to manually test a specific branch

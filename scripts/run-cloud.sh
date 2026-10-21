@@ -45,6 +45,7 @@ CLOUD_COMMAND=(maestro cloud
   ${MDEV_DEVICE_OS:+--device-os "$MDEV_DEVICE_OS"}
   ${MDEV_DEVICE_LOCALE:+--device-locale "$MDEV_DEVICE_LOCALE"}
   ${MDEV_DEVICE_MODEL:+--device-model "$MDEV_DEVICE_MODEL"}
+  ${MDEV_PRIORITY:+--priority "$MDEV_PRIORITY"}
   ${MDEV_INCLUDE_TAGS:+--include-tags "$MDEV_INCLUDE_TAGS"}
   ${MDEV_EXCLUDE_TAGS:+--exclude-tags "$MDEV_EXCLUDE_TAGS"}
   ${MDEV_TIMEOUT:+--timeout "$MDEV_TIMEOUT"}

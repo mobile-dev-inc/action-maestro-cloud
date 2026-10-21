@@ -518,11 +518,13 @@ describe('remaining MDEV exports', () => {
       'device-os': 'iOS-18-2',
       'device-locale': 'de_DE',
       'device-model': 'iPhone-11',
+      priority: 'high',
     })
     await main()
     expect(exportedVars.MDEV_DEVICE_OS).toBe('iOS-18-2')
     expect(exportedVars.MDEV_DEVICE_LOCALE).toBe('de_DE')
     expect(exportedVars.MDEV_DEVICE_MODEL).toBe('iPhone-11')
+    expect(exportedVars.MDEV_PRIORITY).toBe('high')
   })
 
   it('forwards async true; omits when false-y', async () => {
@@ -704,7 +706,7 @@ describe('overwrite behavior across invocations', () => {
       'MDEV_INCLUDE_TAGS', 'MDEV_EXCLUDE_TAGS',
       'MDEV_ANDROID_API_LEVEL', 'MDEV_IOS_VERSION',
       'MDEV_APP_FILE', 'MDEV_APP_BINARY_ID', 'MDEV_MAPPING_FILE',
-      'MDEV_DEVICE_OS', 'MDEV_DEVICE_LOCALE', 'MDEV_DEVICE_MODEL',
+      'MDEV_DEVICE_OS', 'MDEV_DEVICE_LOCALE', 'MDEV_DEVICE_MODEL', 'MDEV_PRIORITY',
       'MDEV_ASYNC', 'MDEV_TIMEOUT', 'MDEV_WORKSPACE',
       'MDEV_REPO_OWNER', 'MDEV_REPO_NAME',
       'MDEV_PR_ID', 'MDEV_COMMIT_SHA',

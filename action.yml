@@ -48,6 +48,9 @@ inputs:
   device-os:
     description: "Device OS to run your flow against"
     required: false
+  priority:
+    description: "Queue priority of this upload within your organization: low, normal or high (default: normal)"
+    required: false
   include-tags:
     description: "List of tags that will remove flows that do not have the provided tags"
     required: false
@@ -107,6 +110,7 @@ runs:
         INPUT_DEVICE-LOCALE: ${{ inputs.device-locale }}
         INPUT_DEVICE-MODEL: ${{ inputs.device-model }}
         INPUT_DEVICE-OS: ${{ inputs.device-os }}
+        INPUT_PRIORITY: ${{ inputs.priority }}
         INPUT_INCLUDE-TAGS: ${{ inputs.include-tags }}
         INPUT_EXCLUDE-TAGS: ${{ inputs.exclude-tags }}
         INPUT_TIMEOUT: ${{ inputs.timeout }}

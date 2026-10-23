@@ -147,6 +147,7 @@ export async function main(): Promise<void> {
     exportMdev('MDEV_DEVICE_OS', deviceOs)
     exportMdev('MDEV_DEVICE_LOCALE', deviceLocale)
     exportMdev('MDEV_DEVICE_MODEL', deviceModel)
+    exportMdev('MDEV_PRIORITY', core.getInput('priority'))
 
     // 9. Async + timeout + workspace
     const async = core.getInput('async')

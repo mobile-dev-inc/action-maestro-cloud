@@ -29,7 +29,7 @@ setup() {
   # Unset all optional vars
   unset MDEV_API_URL MDEV_NAME MDEV_BRANCH MDEV_COMMIT_SHA MDEV_REPO_OWNER \
         MDEV_REPO_NAME MDEV_PR_ID MDEV_APP_BINARY_ID MDEV_MAPPING_FILE \
-        MDEV_DEVICE_OS MDEV_DEVICE_LOCALE MDEV_DEVICE_MODEL \
+        MDEV_DEVICE_OS MDEV_DEVICE_LOCALE MDEV_DEVICE_MODEL MDEV_PRIORITY \
         MDEV_INCLUDE_TAGS MDEV_EXCLUDE_TAGS MDEV_TIMEOUT MDEV_ASYNC \
         MDEV_ANDROID_API_LEVEL MDEV_IOS_VERSION MDEV_ENV
 }
@@ -77,6 +77,12 @@ assert_args_contain() {
   ! grep -q -- "--api-url" "$FAKE_MAESTRO_ARGS_FILE"
 }
 
+@test "omits --priority when MDEV_PRIORITY unset" {
+  run_script
+  assert_success
+  ! grep -q -- "--priority" "$FAKE_MAESTRO_ARGS_FILE"
+}
+
 @test "passes --api-url when MDEV_API_URL set" {
   export MDEV_API_URL="https://example.com"
   run_script
@@ -104,6 +110,7 @@ assert_args_contain() {
   export MDEV_DEVICE_OS="iOS-18-2"
   export MDEV_DEVICE_LOCALE="de_DE"
   export MDEV_DEVICE_MODEL="iPhone-11"
+  export MDEV_PRIORITY="high"
   export MDEV_INCLUDE_TAGS="dev,smoke"
   export MDEV_EXCLUDE_TAGS="flaky"
   export MDEV_TIMEOUT="90"
@@ -114,6 +121,7 @@ assert_args_contain() {
   assert_args_contain "--device-os iOS-18-2"
   assert_args_contain "--device-locale de_DE"
   assert_args_contain "--device-model iPhone-11"
+  assert_args_contain "--priority high"
   assert_args_contain "--include-tags dev,smoke"
   assert_args_contain "--exclude-tags flaky"
   assert_args_contain "--timeout 90"
